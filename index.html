@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ELWOIC Data Request Form</title>
+
+<style>
+body {
+    font-family: "Times New Roman", serif;
+    background: #f2f2f2;
+    padding: 20px;
+}
+
+.container {
+    width: 800px;
+    margin: auto;
+    background: white;
+    padding: 40px;
+    border: 1px solid #000;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    width: 80px;
+    height: 80px;
+    border: 1px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+}
+
+.title {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.subtitle {
+    font-size: 14px;
+}
+
+.form-group {
+    margin-top: 20px;
+}
+
+label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #000;
+    font-family: inherit;
+}
+
+textarea {
+    height: 80px;
+}
+
+.row {
+    display: flex;
+    gap: 20px;
+}
+
+.row .form-group {
+    flex: 1;
+}
+
+.footer {
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.small-logo {
+    width: 60px;
+    height: 60px;
+    border: 1px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+}
+
+button {
+    margin-top: 30px;
+    padding: 10px;
+    width: 100%;
+    background: black;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.checkbox-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.note {
+    font-size: 12px;
+    margin-top: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <div class="logo">LOGO 1</div>
+        <div class="logo">LOGO 2</div>
+    </div>
+
+    <div class="title">
+        <h2>ELWOIC</h2>
+        <div class="subtitle">
+            Elamkulam Local Weather Observation and Information Centre<br>
+            Data Request Application Form
+        </div>
+    </div>
+
+    <form id="dataRequestForm">
+
+        <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" name="name" required>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>Email (Required)</label>
+                <input type="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label>Phone / WhatsApp (Optional)</label>
+                <input type="text" name="phone">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Purpose of Data Request</label>
+            <textarea name="purpose" required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Required Parameters</label>
+            <input type="text" name="parameters"
+                placeholder="e.g., Temperature, Humidity, Wind, Rainfall, Pressure, PM2.5 / AQI"
+                required>
+        </div>
+
+        <div class="form-group">
+            <label>Type of Request</label>
+            <input type="text" name="type"
+                placeholder="e.g., Specific Date & Time OR Date Range"
+                required>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" name="date">
+            </div>
+
+            <div class="form-group">
+                <label>Time</label>
+                <input type="time" name="time">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>From Date</label>
+                <input type="date" name="from_date">
+            </div>
+
+            <div class="form-group">
+                <label>To Date</label>
+                <input type="date" name="to_date">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Declaration</label>
+            <textarea readonly>
+I hereby request weather data from ELWOIC for the purpose mentioned above.
+I agree that the data will be used only for educational and non-commercial purposes.
+            </textarea>
+
+            <div class="checkbox-line">
+                <input type="checkbox" id="agree" required>
+                <label for="agree">I agree and digitally sign this request</label>
+            </div>
+
+            <div class="note">
+                By ticking the above box, you are digitally signing this application form.
+            </div>
+        </div>
+
+        <button type="submit">Submit Request</button>
+
+    </form>
+
+    <div class="footer">
+        <div></div>
+        <div class="small-logo">LOGO 3</div>
+    </div>
+
+</div>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<!-- EMAILJS -->
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCCGNGzhBWETU0gyTUeA2wUVnlQbl2-khU",
+  authDomain: "data-request-161d5.firebaseapp.com",
+  databaseURL: "https://data-request-161d5-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "data-request-161d5",
+  storageBucket: "data-request-161d5.firebasestorage.app",
+  messagingSenderId: "664050584515",
+  appId: "1:664050584515:web:5597b505cc5d2ef01e0b76"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// 🔑 EmailJS Init
+emailjs.init("p5ikS_d-yFWcyzvac");
+
+document.getElementById("dataRequestForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const requestId = "ELWOIC-" + Date.now();
+
+    const data = {
+        requestId,
+        name: this.name.value,
+        email: this.email.value,
+        phone: this.phone.value || "Not Provided",
+        purpose: this.purpose.value,
+        parameters: this.parameters.value,
+        type: this.type.value,
+        date: this.date.value,
+        time: this.time.value,
+        from_date: this.from_date.value,
+        to_date: this.to_date.value,
+        status: "pending",
+        created_at: new Date().toISOString()
+    };
+
+    // 1. Save to Firebase
+    db.ref("requests").push(data);
+
+    // 2. Send to Formspree
+    fetch("https://formspree.io/f/xpqybddq", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+    });
+
+    // 3. Send Email to User
+    emailjs.send("service_3br5mjc", "template_tzvvv1c", {
+        name: data.name,
+        email: data.email,
+        requestId: data.requestId,
+        parameters: data.parameters,
+        type: data.type,
+        date: data.date,
+        time: data.time,
+        from_date: data.from_date,
+        to_date: data.to_date
+    })
+    .then(() => {
+        console.log("Email sent");
+    })
+    .catch(err => {
+        console.error("Email error:", err);
+    });
+
+    alert("Request submitted successfully!\nRequest ID: " + requestId);
+
+    this.reset();
+});
+</script>
+
+</body>
+</html>
