@@ -300,17 +300,21 @@ document.getElementById("dataRequestForm").addEventListener("submit", function(e
     });
 
     // 3. Send Email to User
-    emailjs.send("service_3br5mjc", "template_tzvvv1c", {
-        name: data.name,
-        email: data.email,
-        requestId: data.requestId,
-        parameters: data.parameters,
-        type: data.type,
-        date: data.date,
-        time: data.time,
-        from_date: data.from_date,
-        to_date: data.to_date
-    })
+   emailjs.send("service_3br5mjc", "template_tzvvv1c", {
+    name: data.name,
+    email: data.email,
+    requestId: data.requestId,
+    parameters: data.parameters,
+    type: data.type,
+    date: data.date,
+    time: data.time,
+    from_date: data.from_date,
+    to_date: data.to_date,
+
+    // ✅ NEW IMPORTANT FIELDS
+    status_message: "Your data request has been successfully submitted to ELWOIC.",
+    message: "We will review your request and respond shortly."
+})
     .then(() => {
         console.log("Email sent");
     })
