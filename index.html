@@ -267,7 +267,7 @@ I agree that the data will be used only for educational and non-commercial purpo
         <div class="cutting-line no-print"></div>
 
         <div class="no-print">
-            <button type="button" class="pdf-btn" onclick="downloadPDF()">Download as PDF</button>
+           <button onclick="downloadPDF()">Download as PDF</button>
             <button type="submit">Submit Request</button>
         </div>
 
@@ -281,26 +281,8 @@ I agree that the data will be used only for educational and non-commercial purpo
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
 <script>
-// PDF Download Function
 function downloadPDF() {
-    const element = document.getElementById('form-content');
-    const opt = {
-        margin:       10,
-        filename:     'ELWOIC_Styled_Form.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: 'avoid-all' }
-    };
-
-    // Temporarily hide elements not needed for the PDF
-    const noPrintElements = document.querySelectorAll('.no-print');
-    noPrintElements.forEach(el => el.style.display = 'none');
-
-    html2pdf().set(opt).from(element).save().then(() => {
-        // Restore elements after saving
-        noPrintElements.forEach(el => el.style.display = 'block');
-    });
+    window.location.href = "ELWOIC_Styled_Form.pdf";
 }
 
 const firebaseConfig = {
