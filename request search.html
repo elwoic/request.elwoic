@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Your Request - ELWOIC</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #003a63;
+            --pending: #ffa500;
+            --approved: #28a745;
+            --approved-pending: #007bff;
+            --rejected: #dc3545;
+            --bg-body: #f0f4f8;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-body);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .wrapper {
+            max-width: 550px;
+            margin: 40px auto;
+        }
+
+        .track-card {
+            background: white;
+            padding: 35px;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0, 58, 99, 0.1);
+            text-align: center;
+            border-top: 5px solid var(--primary);
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .logo { height: 60px; object-fit: contain; }
+
+        h2 { color: var(--primary); margin: 0 0 10px 0; font-size: 22px; }
+        .subtitle { font-size: 13px; color: #666; margin-bottom: 25px; }
+
+        /* Search Section */
+        #searchSection { transition: all 0.3s ease; }
+
+        .search-box {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .input-group { text-align: left; }
+        label { font-size: 12px; font-weight: 600; color: #555; margin-left: 5px; }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .captcha-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #eee;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        #captchaCode { 
+            letter-spacing: 4px; 
+            font-weight: bold; 
+            font-style: italic; 
+            background: #d1d1d1; 
+            padding: 5px 12px; 
+            border-radius: 4px; 
+            user-select: none;
+        }
+
+        .btn-main {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            font-size: 15px;
+            transition: 0.3s;
+        }
+
+        .btn-main:hover { background: #002a4d; transform: translateY(-1px); }
+
+        .btn-secondary {
+            background: #e1e8ed;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            margin-top: 20px;
+        }
+
+        #loading { font-size: 13px; color: #666; margin: 15px 0; display: none; }
+
+        /* Result Section */
+        #resultArea {
+            display: none;
+            margin-top: 5px;
+            text-align: left;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .status-pill {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 50px;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .info-row { font-size: 14px; margin-bottom: 8px; border-bottom: 1px solid #f0f0f0; padding-bottom: 4px; }
+        .info-row b { color: #555; width: 100px; display: inline-block; }
+
+        .status-desc {
+            background: #fff8e1;
+            padding: 15px;
+            border-left: 4px solid var(--pending);
+            font-size: 13px;
+            margin: 20px 0;
+            border-radius: 4px;
+            line-height: 1.5;
+        }
+
+        .security-note { font-size: 11px; color: #888; margin-top: 20px; font-style: italic; }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .footer a { color: var(--primary); text-decoration: none; font-weight: 600; }
+
+        /* Dynamic Status Classes */
+        .bg-pending { background: var(--pending); }
+        .bg-approved_pending { background: var(--approved-pending); }
+        .bg-approved { background: var(--approved); }
+        .bg-rejected { background: var(--rejected); }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="track-card">
+        <div class="logo-container">
+            <img src="ELWOIC.png" alt="ELWOIC" class="logo">
+            <img src="Elamkulam Weather Logo Design.1.png" alt="Logo" class="logo">
+        </div>
+        
+        <h2>Request Tracking</h2>
+        <div class="subtitle">Official Weather Information Observation Centre</div>
+        
+        <div id="searchSection">
+            <div class="search-box">
+                <div class="input-group">
+                    <label>Request ID</label>
+                    <input type="text" id="requestIdInput" placeholder="ELWOIC-XXXXXXXXXXXXX">
+                </div>
+
+                <div class="input-group">
+                    <label>Security Verification</label>
+                    <div class="captcha-container">
+                        <span id="captchaCode">CODE</span>
+                        <input type="text" id="captchaInput" placeholder="Type letters">
+                    </div>
+                </div>
+
+                <button class="btn-main" onclick="trackRequest()">Verify & Track Status</button>
+            </div>
+        </div>
+
+        <div id="loading">Connecting to Secure Database...</div>
+
+        <div id="resultArea">
+          <div class="info-row" style="background: #eef2f5; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+    <b>Tracking ID:</b> <span id="resIdDisplay" style="font-family: monospace; font-weight: bold; color: var(--primary);"></span>
+</div>
+            <div id="statusPill" class="status-pill">STATUS</div>
+            <div class="info-row"><b>Name:</b> <span id="resName"></span></div>
+            <div class="info-row"><b>Submitted:</b> <span id="resDate"></span></div>
+            <div class="info-row"><b>Parameters:</b> <span id="resParams"></span></div>
+            
+            <div id="statusDesc" class="status-desc"></div>
+            
+            <p class="security-note">⚠️ Notice: Please do not share your Request ID with anyone to protect your data privacy.</p>
+            
+            <button class="btn-main btn-secondary" onclick="resetSearch()">← Track Another ID</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        For urgent inquiries or further questions, please contact us:<br>
+        <a href="mailto:info@elwoic.in">info@elwoic.in</a> | <a href="mailto:elwoicelamkulam@gmail.com">elwoicelamkulam@gmail.com</a><br>
+        Phone: <b>04933 316 750</b><br>
+        <div style="margin-top:10px; opacity: 0.7;">© 2026 ELWOIC Elamkulam. All Rights Reserved.</div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+    // Firebase Config
+    const firebaseConfig = {
+        apiKey: "AIzaSyCCGNGzhBWETU0gyTUeA2wUVnlQbl2-khU",
+        authDomain: "data-request-161d5.firebaseapp.com",
+        databaseURL: "https://data-request-161d5-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "data-request-161d5"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let currentCaptcha = "";
+
+    function generateCaptcha() {
+        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        let result = "";
+        for (let i = 0; i < 5; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        currentCaptcha = result;
+        document.getElementById('captchaCode').innerText = currentCaptcha;
+        document.getElementById('captchaInput').value = "";
+    }
+
+    // Initial load
+    generateCaptcha();
+
+    function trackRequest() {
+        const inputId = document.getElementById('requestIdInput').value.trim();
+        const userInput = document.getElementById('captchaInput').value.trim().toUpperCase();
+        const searchSection = document.getElementById('searchSection');
+        const resultArea = document.getElementById('resultArea');
+        const loading = document.getElementById('loading');
+
+        if (!inputId) return alert("Please enter your Request ID.");
+        if (userInput !== currentCaptcha) {
+            alert("Security code is incorrect.");
+            generateCaptcha();
+            return;
+        }
+
+        loading.style.display = "block";
+
+        db.ref("requests")
+            .orderByChild("requestId")
+            .equalTo(inputId)
+            .limitToFirst(1)
+            .once("value")
+            .then(snapshot => {
+                loading.style.display = "none";
+                if (snapshot.exists()) {
+                    let data;
+                    snapshot.forEach(child => { data = child.val(); });
+                    
+                    // HIDE SEARCH, SHOW RESULTS
+                    searchSection.style.display = "none";
+                    displayResult(data);
+                } else {
+                    alert("ID not found. Verify the ID and try again.");
+                    generateCaptcha();
+                }
+            })
+            .catch(err => {
+                loading.style.display = "none";
+                alert("Database Error. Please try again.");
+            });
+    }
+
+    function displayResult(data) {
+    const pill = document.getElementById('statusPill');
+    const resultArea = document.getElementById('resultArea');
+    const descBox = document.getElementById('statusDesc');
+    
+    // --- NEW LINE TO SHOW THE ID ---
+    const inputId = document.getElementById('requestIdInput').value.trim();
+    document.getElementById('resIdDisplay').innerText = inputId;
+    // -------------------------------
+
+    resultArea.style.display = "block";
+    document.getElementById('resName').innerText = data.name;
+    document.getElementById('resDate').innerText = new Date(data.created_at).toLocaleDateString();
+    document.getElementById('resParams').innerText = data.parameters;
+        const status = data.status || "pending";
+        pill.innerText = status.replace('_', ' ').toUpperCase();
+        pill.className = "status-pill bg-" + status;
+
+        let message = "";
+        let borderCol = "";
+
+        switch(status) {
+            case 'pending':
+                message = "<b>Process:</b> Your request has been logged and is currently being verified at <b>Administration Table 1</b>.";
+                borderCol = "var(--pending)";
+                break;
+            case 'approved_pending':
+                message = "<b>Process:</b> Verification successful. Your request has moved to <b>Database Table 3</b> for data extraction.";
+                borderCol = "var(--approved-pending)";
+                break;
+            case 'approved':
+                message = "<b>Process:</b> Success! Your request has passed all <b>5 verification tables</b>. Data has been dispatched to your email.";
+                borderCol = "var(--approved)";
+                break;
+            case 'rejected':
+                message = "<b>Process:</b> Terminated. Your request was rejected at <b>Table 1</b> during screening. Please check your email for more details.";
+                borderCol = "var(--rejected)";
+                break;
+        }
+
+        descBox.innerHTML = message;
+        descBox.style.borderLeftColor = borderCol;
+    }
+
+    function resetSearch() {
+        // RESET UI
+        document.getElementById('resultArea').style.display = "none";
+        document.getElementById('searchSection').style.display = "block";
+        
+        // RESET DATA
+        document.getElementById('requestIdInput').value = "";
+        generateCaptcha();
+    }
+</script>
+
+</body>
+</html>
