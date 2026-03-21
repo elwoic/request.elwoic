@@ -1,355 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>ELWOIC Data Request Form</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELWOIC Data Portal</title>
+    <style>
+        /* Modern Navigation Bar */
+        nav {
+            background: #003a63;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 5px 15px;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
 
-<style>
-body {
-    font-family: "Times New Roman", serif;
-    background: #f2f2f2;
-    padding: 20px;
-}
+        nav a:hover, nav a.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffa500;
+        }
 
-.container {
-    width: 800px;
-    margin: auto;
-    background: white;
-    padding: 40px;
-    border: 1px solid #000;
-}
+        /* Container for the Pages */
+        .content-frame {
+            width: 100%;
+            height: calc(100vh - 60px); /* Full height minus nav bar */
+            border: none;
+            margin-top: 60px;
+            display: none; /* Hidden by default */
+        }
 
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+        .active-frame {
+            display: block;
+        }
 
-.logo {
-    width: 80px;
-    height: 80px;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-}
-
-.title {
-    text-align: center;
-    margin-top: 10px;
-}
-
-.subtitle {
-    font-size: 14px;
-}
-
-.form-group {
-    margin-top: 20px;
-}
-
-label {
-    font-weight: bold;
-    display: block;
-    margin-bottom: 5px;
-}
-
-input, textarea {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #000;
-    font-family: inherit;
-    box-sizing: border-box;
-}
-
-textarea {
-    height: 80px;
-}
-
-.row {
-    display: flex;
-    gap: 20px;
-}
-
-.row .form-group {
-    flex: 1;
-}
-
-.logo img, .small-logo img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-/* Updated Layout Elements */
-.pre-submit-area {
-    margin-top: 40px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-}
-
-.small-logo {
-    width: 60px;
-    height: 60px;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-}
-
-.cutting-line {
-    width: 100%;
-    border-top: 1px dashed #000;
-    margin: 20px 0;
-    position: relative;
-}
-
-.cutting-line::after {
-    content: "✂ Cut here for physical submission";
-    position: absolute;
-    right: 0;
-    top: -12px;
-    font-size: 10px;
-    background: white;
-    padding: 0 5px;
-}
-
-button {
-    margin-top: 10px;
-    padding: 10px;
-    width: 100%;
-    background: black;
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.pdf-btn {
-    background: #444;
-    margin-bottom: 10px;
-}
-
-.checkbox-line {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 15px;
-}
-
-.note {
-    font-size: 12px;
-    margin-top: 5px;
-}
-
-/* Hide buttons and cutting line during PDF generation */
-.no-print {
-    display: block;
-}
-</style>
+        body { margin: 0; overflow: hidden; }
+    </style>
 </head>
-
 <body>
 
-<div class="container" id="form-content">
+    <nav>
+        <a onclick="showSection('why')" id="btn-why">Why Database?</a>
+        <a onclick="showSection('form')" id="btn-form">Request Data</a>
+        <a onclick="showSection('search')" id="btn-search">Track Status</a>
+    </nav>
 
-    <div class="header">
-        <div class="logo">
-            <img src="images/ELWOIC.png" alt="Logo 1">
-        </div>
-        <div class="logo">
-            <img src="images/Elamkulam Weather Logo Design.1.png" alt="Logo 2">
-        </div>
-    </div>
+    <iframe src="why-database.html" id="frame-why" class="content-frame active-frame"></iframe>
 
-    <div class="title">
-        <h2>ELWOIC</h2>
-        <div class="subtitle">
-            Elamkulam Local Weather Observation and Information Centre<br>
-            Data Request Application Form
-        </div>
-    </div>
+    <iframe src="request-form.html" id="frame-form" class="content-frame"></iframe>
 
-    <form id="dataRequestForm">
+    <iframe src="request-search.html" id="frame-search" class="content-frame"></iframe>
 
-        <div class="form-group">
-            <label>Full Name</label>
-            <input type="text" name="name" required>
-        </div>
+    <script>
+        function showSection(sectionId) {
+            // Hide all frames
+            document.querySelectorAll('.content-frame').forEach(f => f.classList.remove('active-frame'));
+            // Remove active style from buttons
+            document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
 
-        <div class="row">
-            <div class="form-group">
-                <label>Email (Required)</label>
-                <input type="email" name="email" required>
-            </div>
-
-            <div class="form-group">
-                <label>Phone / WhatsApp (Optional)</label>
-                <input type="text" name="phone">
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Purpose of Data Request</label>
-            <textarea name="purpose" required></textarea>
-        </div>
-
-        <div class="form-group">
-            <label>Required Parameters</label>
-            <input type="text" name="parameters"
-                placeholder="e.g., Temperature, Humidity, Wind, Rainfall, Pressure, PM2.5 / AQI"
-                required>
-        </div>
-
-        <div class="form-group">
-            <label>Type of Request</label>
-            <input type="text" name="type"
-                placeholder="e.g., Specific Date & Time OR Date Range"
-                required>
-        </div>
-
-        <div class="row">
-            <div class="form-group">
-                <label>Date</label>
-                <input type="date" name="date">
-            </div>
-
-            <div class="form-group">
-                <label>Time</label>
-                <input type="time" name="time">
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="form-group">
-                <label>From Date</label>
-                <input type="date" name="from_date">
-            </div>
-
-            <div class="form-group">
-                <label>To Date</label>
-                <input type="date" name="to_date">
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Additional Details if any</label>
-            <textarea name="additional_details" placeholder="Enter any extra information here..."></textarea>
-        </div>
-
-        <div class="form-group">
-            <label>Declaration</label>
-            <textarea readonly>
-I hereby request weather data from ELWOIC for the purpose mentioned above.
-I agree that the data will be used only for educational and non-commercial purposes.
-            </textarea>
-
-            <div class="checkbox-line">
-                <input type="checkbox" id="agree" required>
-                <label for="agree">I agree and digitally sign this request</label>
-            </div>
-
-            <div class="note">
-                By ticking the above box, you are digitally signing this application form.
-            </div>
-        </div>
-
-        <div class="pre-submit-area">
-            <div class="small-logo">
-                <img src="images/⭐.png" alt="Logo 3">
-            </div>
-        </div>
-
-        <div class="cutting-line no-print"></div>
-
-        <div class="no-print">
-           <button onclick="downloadPDF()">Download as PDF</button>
-            <button type="submit">Submit Request</button>
-        </div>
-
-    </form>
-
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-
-<script>
-function downloadPDF() {
-    window.location.href = "ELWOIC_Styled_Form.pdf";
-}
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCCGNGzhBWETU0gyTUeA2wUVnlQbl2-khU",
-  authDomain: "data-request-161d5.firebaseapp.com",
-  databaseURL: "https://data-request-161d5-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "data-request-161d5",
-  storageBucket: "data-request-161d5.firebasestorage.app",
-  messagingSenderId: "664050584515",
-  appId: "1:664050584515:web:5597b505cc5d2ef01e0b76"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-emailjs.init("p5ikS_d-yFWcyzvac");
-
-document.getElementById("dataRequestForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-
-    const requestId = "ELWOIC-" + Date.now();
-
-    const data = {
-        requestId,
-        name: this.name.value,
-        email: this.email.value,
-        phone: this.phone.value || "Not Provided",
-        purpose: this.purpose.value,
-        parameters: this.parameters.value,
-        type: this.type.value,
-        date: this.date.value,
-        time: this.time.value,
-        from_date: this.from_date.value,
-        to_date: this.to_date.value,
-        additional_details: this.additional_details.value,
-        status: "pending",
-        created_at: new Date().toISOString()
-    };
-
-    db.ref("requests").push(data);
-
-    fetch("https://formspree.io/f/xpqybddq", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-    });
-
-   emailjs.send("service_3br5mjc", "template_tzvvv1c", {
-        name: data.name,
-        email: data.email,
-        requestId: data.requestId,
-        parameters: data.parameters,
-        type: data.type,
-        date: data.date,
-        time: data.time,
-        from_date: data.from_date,
-        to_date: data.to_date,
-        status_message: "Your data request has been successfully submitted to ELWOIC.",
-        message: "We will review your request and respond shortly."
-    })
-    .then(() => console.log("Email sent"))
-    .catch(err => console.error("Email error:", err));
-
-    alert("Request submitted successfully!\nRequest ID: " + requestId);
-    this.reset();
-});
-</script>
+            // Show selected frame
+            document.getElementById('frame-' + sectionId).classList.add('active-frame');
+            // Highlight selected button
+            document.getElementById('btn-' + sectionId).classList.add('active');
+        }
+        
+        // Initialize the first button as active
+        document.getElementById('btn-why').classList.add('active');
+    </script>
 
 </body>
 </html>
