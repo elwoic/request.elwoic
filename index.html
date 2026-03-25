@@ -61,6 +61,23 @@
         .data-table th { background: var(--bg-gray); text-align: left; padding: 12px; border: 1px solid var(--border); color: var(--gov-blue); }
         .data-table td { padding: 12px; border: 1px solid var(--border); }
         .status-online { color: #28a745; font-weight: bold; font-size: 11px; }
+        .status-online {
+    color: #28a745;
+    font-weight: bold;
+    font-size: 11px;
+}
+
+.status-coming {
+    color: #ffa500; /* orange */
+    font-weight: bold;
+    font-size: 11px;
+}
+
+.status-offline {
+    color: #dc3545; /* red */
+    font-weight: bold;
+    font-size: 11px;
+}
 
         /* Malayalam Points */
         .point-box { margin-bottom: 15px; padding: 20px; border-left: 4px solid var(--gov-blue); background: #f9f9f9; transition: 0.2s; }
@@ -157,19 +174,61 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td><span class="status-online"></span></td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td><span class="status-online"></span></td>
-                </tr>
-            </tbody>
+    <tr>
+        <td>Temperature (°C)</td>
+        <td>ELWOIC-01</td>
+        <td>Every 60 Minutes</td>
+        <td><span class="status-online">ONLINE</span></td>
+    </tr>
+    <tr>
+        <td>Humidity (%)</td>
+        <td>ELWOIC-01</td>
+        <td>Every 60 seconds</td>
+        <td><span class="status-online">ONLINE</span></td>
+    </tr>
+    <tr>
+        <td>Rainfall (mm)</td>
+        <td>ELWOIC-01</td>
+        <td>Real-time (event based)</td>
+        <td><span class="status-online">ONLINE</span></td>
+    </tr>
+    <tr>
+        <td>Wind Speed (km/h)</td>
+        <td>ELWOIC-01</td>
+        <td>Every 60 Minutes</td>
+        <td><span class="status-online">ONLINE</span></td>
+    </tr>
+    <tr>
+        <td>Wind Direction</td>
+        <td>ELWOIC-01</td>
+        <td>-------</td>
+        <td><span class="status-coming">COMING SOON</span></td>
+    </tr>
+    <tr>
+        <td>Atmospheric Pressure (hPa)</td>
+        <td>ELWOIC-01</td>
+        <td>Every 60 Minutes</td>
+        <td><span class="status-online">ONLINE</span></td>
+    </tr>
+    <tr>
+        <td>UV Index</td>
+        <td>ELWOIC-01</td>
+        <td>-------</td>
+        <td><span class="status-coming">COMING SOON</span></td>
+    </tr>
+    <tr>
+        <td>Air Quality (PM2.5)</td>
+        <td>ELWOIC-01</td>
+        <td>Every 60 seconds</td>
+        <td><span class="status-online">ONLINE</span></td>
+    </tr>
+    <tr>
+        <td>Visibility</td>
+        <td>ELWOIC-01</td>
+        <td>Every 60 Minutes</td>
+        <td><span class="status-online">ONLINE</span></td>
+    </tr>
+</tbody>
         </table>
 
         <div class="section-title">കാലാവസ്ഥാ വിവരങ്ങൾ എന്തിന് അറിയണം?</div>
