@@ -154,7 +154,14 @@ body {
     padding: 12px;
     border: 1px solid var(--border);
 }
-
+.data-table td:first-child, 
+.data-table th:first-child {
+    position: sticky;
+    left: 0;
+    background: white;
+    z-index: 1;
+    border-right: 2px solid var(--gov-gold);
+}
 /* STATUS */
 .status-online {
     color: #28a745;
@@ -349,33 +356,40 @@ img {
 }
 
 @media (max-width: 600px) {
-
-    body {
-        background-attachment: scroll;
-        background-size: 80%;
+    /* Hide the table header */
+    .data-table thead {
+        display: none;
     }
 
-    .header-flex {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
+    .data-table, .data-table tbody, .data-table tr, .data-table td {
+        display: block;
+        width: 100%;
     }
 
-    .promo-grid {
-        grid-template-columns: 1fr;
+    .data-table tr {
+        margin-bottom: 15px;
+        border: 1px solid var(--border);
     }
 
-    .data-table {
-        min-width: 500px;
-        font-size: 12px;
-    }
-
-    .data-table th,
     .data-table td {
-        padding: 8px;
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+        border: none;
+        border-bottom: 1px solid #eee;
+    }
+
+    /* Add the labels back using data-attributes or hardcoding */
+    .data-table td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        width: 45%;
+        font-weight: bold;
+        text-align: left;
+        color: var(--gov-blue);
     }
 }
-
     </style>
 </head>
 <body>
