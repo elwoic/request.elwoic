@@ -42,9 +42,28 @@
         .nav-bar { background: var(--gov-blue); color: white; padding: 12px 0; font-size: 13px; font-weight: 500; }
         .nav-bar span { margin-right: 20px; opacity: 0.9; cursor: pointer; }
         .nav-bar span:hover { text-decoration: underline; }
+body {
+    overflow-x: hidden;
+}
+
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
 
         /* --- Layout Grid --- */
-        .portal-grid { display: grid; grid-template-columns: 1fr 350px; gap: 30px; margin-top: 30px; padding-bottom: 60px; }
+        .portal-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 30px;
+}
+
+@media (max-width: 900px) {
+    .portal-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 
         /* --- Main Content --- */
         .section-title {
@@ -60,6 +79,10 @@
         .data-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 14px; background: white; }
         .data-table th { background: var(--bg-gray); text-align: left; padding: 12px; border: 1px solid var(--border); color: var(--gov-blue); }
         .data-table td { padding: 12px; border: 1px solid var(--border); }
+        .table-wrapper {
+           overflow-x: auto;
+        }
+
         .status-online { color: #28a745; font-weight: bold; font-size: 11px; }
         .status-online {
     color: #28a745;
@@ -115,6 +138,15 @@
         .bg-approved { background: var(--approved); }
         .bg-rejected { background: var(--gov-red); }
         .status-desc { background: #fdf8e4; padding: 12px; font-size: 12px; border-left: 3px solid var(--gov-gold); line-height: 1.5; }
+img {
+    max-width: 100%;
+    height: auto;
+}
+@media (max-width: 600px) {
+    .promo-grid {
+        grid-template-columns: 1fr;
+    }
+}
 
         /* Footer */
         .gov-footer { background: #1a1a1a; color: #bbb; padding: 60px 0; font-size: 13px; margin-top: 40px; }
@@ -164,7 +196,9 @@
     
     <main>
         <div class="section-title">Verified Data Availability</div>
-        <table class="data-table">
+
+<div class="table-wrapper">
+    <table class="data-table">
             <thead>
                 <tr>
                     <th>Data Parameter</th>
@@ -178,25 +212,25 @@
         <td>Temperature (°C)</td>
         <td>ELWOIC-01</td>
         <td>Every 60 Minutes</td>
-        <td><span class="status-online">ONLINE</span></td>
+        <td><span class="status-online">• ONLINE</span></td>
     </tr>
     <tr>
         <td>Humidity (%)</td>
         <td>ELWOIC-01</td>
         <td>Every 60 seconds</td>
-        <td><span class="status-online">ONLINE</span></td>
+        <td><span class="status-online">• ONLINE</span></td>
     </tr>
     <tr>
         <td>Rainfall (mm)</td>
         <td>ELWOIC-01</td>
         <td>Real-time (event based)</td>
-        <td><span class="status-online">ONLINE</span></td>
+        <td><span class="status-online">• ONLINE</span></td>
     </tr>
     <tr>
         <td>Wind Speed (km/h)</td>
         <td>ELWOIC-01</td>
-        <td>Every 60 Minutes</td>
-        <td><span class="status-online">ONLINE</span></td>
+        <td>Every 60 Minutes</td> 
+        <td><span class="status-online">• ONLINE</span></td>
     </tr>
     <tr>
         <td>Wind Direction</td>
@@ -208,7 +242,7 @@
         <td>Atmospheric Pressure (hPa)</td>
         <td>ELWOIC-01</td>
         <td>Every 60 Minutes</td>
-        <td><span class="status-online">ONLINE</span></td>
+        <td><span class="status-online">• ONLINE</span></td>
     </tr>
     <tr>
         <td>UV Index</td>
@@ -220,17 +254,17 @@
         <td>Air Quality (PM2.5)</td>
         <td>ELWOIC-01</td>
         <td>Every 60 seconds</td>
-        <td><span class="status-online">ONLINE</span></td>
+        <td><span class="status-online">• ONLINE</span></td>
     </tr>
     <tr>
         <td>Visibility</td>
         <td>ELWOIC-01</td>
         <td>Every 60 Minutes</td>
-        <td><span class="status-online">ONLINE</span></td>
+        <td><span class="status-online">• ONLINE</span></td>
     </tr>
 </tbody>
         </table>
-
+</div>
         <div class="section-title">കാലാവസ്ഥാ വിവരങ്ങൾ എന്തിന് അറിയണം?</div>
         
         <div class="point-box">
