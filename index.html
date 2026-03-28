@@ -548,6 +548,14 @@ img {
         <div class="sidebar-box">
             <h3>Request Tracking</h3>
             <div id="searchSection">
+              <div class="input-group">
+  <label>Tracking Type</label>
+  <select id="trackType" class="gov-input">
+    <option value="request">Request Tracking</option>
+    <option value="message">Message Tracking</option>
+  </select>
+</div>
+
                 <div class="input-group">
                     <label>Reference Number</label>
                     <input type="text" id="requestIdInput" class="gov-input" placeholder="ELWOIC-XXXXXXXX">
@@ -561,7 +569,7 @@ img {
                     </div>
                 </div>
                 
-                <button class="btn-gov" onclick="trackRequest()">VERIFY & TRACK</button>
+                <button class="btn-gov" onclick="trackItem()">VERIFY & TRACK</button>
             </div>
 
             <div id="loading" style="display:none; padding:20px; text-align:center; font-size: 12px; color: #666;">
@@ -617,149 +625,198 @@ img {
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
-    /* =========================
-       FIREBASE CONFIG
-    ========================= */
-    const firebaseConfig = {
-        apiKey: "AIzaSyCCGNGzhBWETU0gyTUeA2wUVnlQbl2-khU",
-        authDomain: "data-request-161d5.firebaseapp.com",
-        databaseURL: "https://data-request-161d5-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "data-request-161d5"
-    };
+/* =========================
+   FIREBASE CONFIGS
+========================= */
 
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
+// 🔵 REQUEST DATABASE
+const requestConfig = {
+    apiKey: "AIzaSyCCGNGzhBWETU0gyTUeA2wUVnlQbl2-khU",
+    authDomain: "data-request-161d5.firebaseapp.com",
+    databaseURL: "https://data-request-161d5-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "data-request-161d5"
+};
+
+// 🟢 MESSAGE DATABASE
+const messageConfig = {
+    apiKey: "AIzaSyC_Ckz9wFQxXgWivmvIt5ISp7bT9tWbxCY",
+    authDomain: "elwoic.firebaseapp.com",
+    databaseURL: "https://elwoic-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "elwoic"
+};
+
+// Initialize BOTH apps
+const requestApp = firebase.initializeApp(requestConfig, "requestApp");
+const messageApp = firebase.initializeApp(messageConfig, "messageApp");
+
+// Separate DB references
+const requestDB = requestApp.database();
+const messageDB = messageApp.database();
+
+
+/* =========================
+   CAPTCHA SYSTEM
+========================= */
+let currentCaptcha = "";
+
+function generateCaptcha() {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let result = "";
+    for (let i = 0; i < 5; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    const db = firebase.database();
+    currentCaptcha = result;
+    document.getElementById('captchaCode').innerText = currentCaptcha;
+    document.getElementById('captchaInput').value = "";
+}
 
-    /* =========================
-       CAPTCHA SYSTEM
-    ========================= */
-    let currentCaptcha = "";
+generateCaptcha();
 
-    function generateCaptcha() {
-        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-        let result = "";
-        for (let i = 0; i < 5; i++) {
-            result += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        currentCaptcha = result;
-        document.getElementById('captchaCode').innerText = currentCaptcha;
-        document.getElementById('captchaInput').value = "";
+
+/* =========================
+   TRACK ITEM (FIXED)
+========================= */
+function trackItem() {
+
+    const inputId = document.getElementById('requestIdInput').value.trim();
+    const userInput = document.getElementById('captchaInput').value.trim().toUpperCase();
+    const trackType = document.getElementById('trackType').value;
+
+    if (!inputId) return alert("Please enter your ID.");
+
+    if (userInput !== currentCaptcha) {
+        alert("Security code is incorrect.");
+        generateCaptcha();
+        return;
     }
 
-    // Initial load
-    generateCaptcha();
+    document.getElementById('loading').style.display = "block";
 
-    /* =========================
-       TRACK REQUEST (RULE COMPATIBLE)
-    ========================= */
-    function trackRequest() {
-        const inputId = document.getElementById('requestIdInput').value.trim();
-        const userInput = document.getElementById('captchaInput').value.trim().toUpperCase();
-        const searchSection = document.getElementById('searchSection');
-        const loading = document.getElementById('loading');
+    let db, refPath, field;
 
-        if (!inputId) return alert("Please enter your Request ID.");
-        
-        if (userInput !== currentCaptcha) {
-            alert("Security code is incorrect.");
-            generateCaptcha();
-            return;
-        }
+    if (trackType === "request") {
+        db = requestDB;
+        refPath = "requests";
+        field = "requestId";
+    } else {
+        db = messageDB;
+        refPath = "messages";
+        field = "refNumber"; // ⚠️ IMPORTANT: must exist in DB
+    }
 
-        loading.style.display = "block";
+    db.ref(refPath)
+        .orderByChild(field)
+        .equalTo(inputId)
+        .limitToFirst(1)
+        .once("value")
+        .then(snapshot => {
 
-        // ✅ IMPORTANT: This specific chain satisfies your ".read" rule:
-        // (query.orderByChild == 'requestId' && query.limitToFirst == 1)
-        db.ref("requests")
-            .orderByChild("requestId")
-            .equalTo(inputId)
-            .limitToFirst(1) 
-            .once("value")
-            .then(snapshot => {
-                loading.style.display = "none";
-                
-                if (snapshot.exists()) {
-                    let data;
-                    // Even with 1 result, Firebase returns a snapshot you must loop through
-                    snapshot.forEach(child => { data = child.val(); });
-                    
-                    searchSection.style.display = "none";
+            document.getElementById('loading').style.display = "none";
+
+            if (snapshot.exists()) {
+
+                let data;
+                snapshot.forEach(child => data = child.val());
+
+                document.getElementById('searchSection').style.display = "none";
+
+                if (trackType === "request") {
                     displayResult(data, inputId);
                 } else {
-                    alert("Request ID not found. Please verify and try again.");
-                    generateCaptcha();
+                    displayMessageResult(data, inputId);
                 }
-            })
-            .catch(err => {
-                loading.style.display = "none";
-                console.error("Database Error:", err);
-                alert("Access Denied: The security system blocked the request or the ID is invalid.");
-            });
+
+            } else {
+                alert("ID not found.");
+                generateCaptcha();
+            }
+
+        })
+        .catch(err => {
+            document.getElementById('loading').style.display = "none";
+            console.error(err);
+            alert("Access denied or invalid request.");
+        });
+}
+
+
+/* =========================
+   DISPLAY REQUEST
+========================= */
+function displayResult(data, inputId) {
+
+    const pill = document.getElementById('statusPill');
+    const resultArea = document.getElementById('resultArea');
+    const descBox = document.getElementById('statusDesc');
+
+    document.getElementById('resIdDisplay').innerText = inputId;
+
+    resultArea.style.display = "block";
+    document.getElementById('resName').innerText = data.name || "N/A";
+    document.getElementById('resDate').innerText =
+        data.created_at ? new Date(data.created_at).toLocaleDateString() : "N/A";
+
+    const status = data.status || "pending";
+
+    pill.innerText = status.toUpperCase();
+    pill.className = "status-pill bg-" + status;
+
+    descBox.innerHTML = "Request is being processed. Please check your email inbox";
+}
+
+
+/* =========================
+   DISPLAY MESSAGE
+========================= */
+function displayMessageResult(data, inputId) {
+
+    const pill = document.getElementById('statusPill');
+    const resultArea = document.getElementById('resultArea');
+    const descBox = document.getElementById('statusDesc');
+
+    document.getElementById('resIdDisplay').innerText = inputId;
+
+    resultArea.style.display = "block";
+    document.getElementById('resName').innerText = data.name || "N/A";
+    document.getElementById('resDate').innerText =
+        data.timestamp ? new Date(data.timestamp).toLocaleDateString() : "N/A";
+
+    const status = data.status || "received";
+
+    pill.innerText = status.toUpperCase();
+    pill.className = "status-pill bg-" + status;
+
+    let message = "";
+
+    switch(status) {
+        case 'received':
+            message = "Message received.";
+            break;
+        case 'seen':
+            message = "Message reviewed.";
+            break;
+        case 'replied':
+            message = "Reply sent.";
+            break;
+        default:
+            message = "Processing...";
     }
 
-    /* =========================
-       DISPLAY RESULT
-    ========================= */
-    function displayResult(data, inputId) {
-        const pill = document.getElementById('statusPill');
-        const resultArea = document.getElementById('resultArea');
-        const descBox = document.getElementById('statusDesc');
+    descBox.innerHTML = message;
+}
 
-        // Show the ID for professionalism
-        document.getElementById('resIdDisplay').innerText = inputId;
-        
-        resultArea.style.display = "block";
-        document.getElementById('resName').innerText = data.name || "N/A";
-        document.getElementById('resDate').innerText = data.created_at ? new Date(data.created_at).toLocaleDateString() : "N/A";
-        
-        // Handle parameters if they exist in your DB
-        if(document.getElementById('resParams')) {
-            document.getElementById('resParams').innerText = data.parameters || "General Weather Data";
-        }
 
-        const status = data.status || "pending";
-        pill.innerText = status.replace('_', ' ').toUpperCase();
-        pill.className = "status-pill bg-" + status;
-
-        // Custom Government-style messages
-        let message = "";
-        let borderCol = "";
-
-        switch(status) {
-            case 'pending':
-                message = "<b>Process:</b> Your request has been logged and is currently being verified at <b>Administration Table 1</b>.";
-                borderCol = "var(--pending)";
-                break;
-            case 'approved_pending':
-                message = "<b>Process:</b> Verification successful. Your request has moved to <b>Database Table 3</b> for data extraction.";
-                borderCol = "var(--approved-pending)";
-                break;
-            case 'approved':
-                message = "<b>Process:</b> Success! Your request has passed all <b>5 verification tables</b>. Data has been dispatched to your email.";
-                borderCol = "var(--approved)";
-                break;
-            case 'rejected':
-                message = "<b>Process:</b> Terminated. Your request was rejected at <b>Table 1</b> during screening. Please check your email for details.";
-                borderCol = "var(--rejected)";
-                break;
-            default:
-                message = "<b>Process:</b> Request is being processed by the ELWOIC system.";
-                borderCol = "#ccc";
-        }
-
-        descBox.innerHTML = message;
-        descBox.style.borderLeftColor = borderCol;
-    }
-
-    function resetSearch() {
-        document.getElementById('resultArea').style.display = "none";
-        document.getElementById('searchSection').style.display = "block";
-        document.getElementById('requestIdInput').value = "";
-        generateCaptcha();
-    }
+/* =========================
+   RESET
+========================= */
+function resetSearch() {
+    document.getElementById('resultArea').style.display = "none";
+    document.getElementById('searchSection').style.display = "block";
+    document.getElementById('requestIdInput').value = "";
+    generateCaptcha();
+}
 </script>
+
 
 </body>
 </html>
