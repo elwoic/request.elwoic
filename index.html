@@ -6,7 +6,7 @@
     <title>ELWOIC | Official State Weather Data & Citizen Services</title>
     <link href="https://fonts.googleapis.com/css2?family=Manjari:wght@400;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
+       :root {
     --gov-blue: #003a63;
     --gov-gold: #b38b2d;
     --gov-red: #dc3545;
@@ -32,24 +32,12 @@ body {
     background-image: linear-gradient(rgba(255,255,255,0.96), rgba(255,255,255,0.96)), url('images/ELWOIC.png');
     background-position: center;
     background-size: 40%;
-}
-
-body {
-    background: linear-gradient(rgba(255,255,255,0.96), rgba(255,255,255,0.96)),
-                url('images/ELWOIC.png') center/40% no-repeat;
-}
-
-/* Disable fixed background on mobile */
-@media (max-width: 768px) {
-    body {
-        background-attachment: scroll;
-        background-size: 80%;
-    }
+    background-attachment: fixed;
 }
 
 /* CONTAINER */
 .container {
-    max-width: 1500px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
 }
@@ -154,14 +142,7 @@ body {
     padding: 12px;
     border: 1px solid var(--border);
 }
-.data-table td:first-child, 
-.data-table th:first-child {
-    position: sticky;
-    left: 0;
-    background: white;
-    z-index: 1;
-    border-right: 2px solid var(--gov-gold);
-}
+
 /* STATUS */
 .status-online {
     color: #28a745;
@@ -356,40 +337,33 @@ img {
 }
 
 @media (max-width: 600px) {
-    /* Hide the table header */
-    .data-table thead {
-        display: none;
+
+    body {
+        background-attachment: scroll;
+        background-size: 80%;
     }
 
-    .data-table, .data-table tbody, .data-table tr, .data-table td {
-        display: block;
-        width: 100%;
+    .header-flex {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
     }
 
-    .data-table tr {
-        margin-bottom: 15px;
-        border: 1px solid var(--border);
+    .promo-grid {
+        grid-template-columns: 1fr;
     }
 
+    .data-table {
+        min-width: 500px;
+        font-size: 12px;
+    }
+
+    .data-table th,
     .data-table td {
-        text-align: right;
-        padding-left: 50%;
-        position: relative;
-        border: none;
-        border-bottom: 1px solid #eee;
-    }
-
-    /* Add the labels back using data-attributes or hardcoding */
-    .data-table td::before {
-        content: attr(data-label);
-        position: absolute;
-        left: 10px;
-        width: 45%;
-        font-weight: bold;
-        text-align: left;
-        color: var(--gov-blue);
+        padding: 8px;
     }
 }
+
     </style>
 </head>
 <body>
