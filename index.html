@@ -32,7 +32,19 @@ body {
     background-image: linear-gradient(rgba(255,255,255,0.96), rgba(255,255,255,0.96)), url('images/ELWOIC.png');
     background-position: center;
     background-size: 40%;
-    background-attachment: fixed;
+}
+
+body {
+    background: linear-gradient(rgba(255,255,255,0.96), rgba(255,255,255,0.96)),
+                url('images/ELWOIC.png') center/40% no-repeat;
+}
+
+/* Disable fixed background on mobile */
+@media (max-width: 768px) {
+    body {
+        background-attachment: scroll;
+        background-size: 80%;
+    }
 }
 
 /* CONTAINER */
