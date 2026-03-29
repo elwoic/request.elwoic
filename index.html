@@ -458,6 +458,161 @@ img {
     }
 }
 
+/* ========================= */
+/* 📦 TRACKING RESULT UI    */
+/* ========================= */
+
+.track-result {
+    animation: fadeInUp 0.4s ease;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ID header bar */
+.track-id-bar {
+    background: var(--gov-blue);
+    color: white;
+    font-family: monospace;
+    font-size: 11px;
+    padding: 7px 10px;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    border-radius: 2px;
+}
+
+/* Applicant info */
+.track-info {
+    font-size: 12px;
+    color: #444;
+    margin-bottom: 14px;
+    line-height: 1.7;
+}
+
+/* Big status badge */
+.track-status-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+}
+.badge-approved  { background: #d4edda; color: #155724; border: 1px solid #28a745; }
+.badge-approved_pending { background: #cce5ff; color: #004085; border: 1px solid #007bff; }
+.badge-rejected  { background: #f8d7da; color: #721c24; border: 1px solid #dc3545; }
+.badge-pending   { background: #fff3cd; color: #856404; border: 1px solid #ffa500; }
+
+/* Pipeline tracker */
+.track-pipeline {
+    margin: 14px 0;
+}
+
+.track-pipeline-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+
+.pipeline-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+}
+
+.pipeline-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    position: relative;
+}
+
+/* Vertical line between steps */
+.pipeline-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 11px;
+    top: 24px;
+    width: 2px;
+    height: calc(100% - 4px);
+    background: #ddd;
+    z-index: 0;
+}
+
+.pipeline-step.done:not(:last-child)::after  { background: #28a745; }
+.pipeline-step.active:not(:last-child)::after { background: #ffa500; }
+.pipeline-step.error:not(:last-child)::after  { background: #dc3545; }
+
+/* Step circle */
+.step-circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    z-index: 1;
+    border: 2px solid #ddd;
+    background: #fff;
+    color: #bbb;
+}
+
+.pipeline-step.done  .step-circle { background: #28a745; border-color: #28a745; color: white; }
+.pipeline-step.active .step-circle { background: #ffa500; border-color: #ffa500; color: white; }
+.pipeline-step.error  .step-circle { background: #dc3545; border-color: #dc3545; color: white; }
+.pipeline-step.waiting .step-circle { background: #fff; border-color: #ddd; color: #bbb; }
+
+/* Step label */
+.step-body {
+    padding: 3px 0 14px;
+}
+.step-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+}
+.pipeline-step.waiting .step-label { color: #bbb; }
+.pipeline-step.error   .step-label { color: #dc3545; }
+.pipeline-step.done    .step-label { color: #155724; }
+.pipeline-step.active  .step-label { color: #856404; }
+
+.step-sub {
+    font-size: 10px;
+    color: #999;
+    margin-top: 1px;
+}
+.pipeline-step.done .step-sub  { color: #28a745; }
+.pipeline-step.error .step-sub { color: #dc3545; }
+.pipeline-step.active .step-sub { color: #ffa500; }
+
+/* Description box */
+.track-desc-box {
+    margin: 10px 0 14px;
+    padding: 10px 12px;
+    font-size: 12px;
+    line-height: 1.6;
+    border-radius: 4px;
+    border-left: 4px solid var(--gov-blue);
+}
+.track-desc-box.desc-approved         { background: #d4edda; border-color: #28a745; color: #155724; }
+.track-desc-box.desc-approved_pending { background: #cce5ff; border-color: #007bff; color: #004085; }
+.track-desc-box.desc-rejected         { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+.track-desc-box.desc-pending          { background: #fff3cd; border-color: #ffa500; color: #856404; }
+.track-desc-box.desc-received         { background: #d4edda; border-color: #28a745; color: #155724; }
+.track-desc-box.desc-seen             { background: #cce5ff; border-color: #007bff; color: #004085; }
+.track-desc-box.desc-replied          { background: #d4edda; border-color: #28a745; color: #155724; }
+
     </style>
 </head>
 <body>
@@ -668,15 +823,8 @@ img {
                 Connecting to Secure Database...
             </div>
 
-            <div id="resultArea" style="display:none; text-align: left; animation: fadeIn 0.4s;">
-                <div style="font-size: 12px; background: #eee; padding: 5px; margin-bottom: 10px; font-weight: bold; font-family: monospace;">
-                    ID: <span id="resIdDisplay"></span>
-                </div>
-                <div id="statusPill" class="status-pill">STATUS</div>
-                <div style="font-size:13px; margin-bottom: 5px;"><b>Applicant:</b> <span id="resName"></span></div>
-                <div style="font-size:13px; margin-bottom: 15px;"><b>Date:</b> <span id="resDate"></span></div>
-                <div id="statusDesc" class="status-desc"></div>
-                <button class="btn-gov" style="background:#666; font-size: 11px;" onclick="resetSearch()">New Search</button>
+            <div id="resultArea" style="display:none; text-align: left;">
+                <!-- Dynamically filled by displayResult() or displayMessageResult() -->
             </div>
         </div>
 
@@ -751,6 +899,15 @@ const messageDB = messageApp.database();
    CAPTCHA SYSTEM
 ========================= */
 let currentCaptcha = "";
+
+document.getElementById('trackType').addEventListener('change', function() {
+    const input = document.getElementById('requestIdInput');
+    if (this.value === 'message') {
+        input.placeholder = 'XXXXXXXX';
+    } else {
+        input.placeholder = 'ELWOIC-XXXXXXXX';
+    }
+});
 
 function generateCaptcha() {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -834,69 +991,197 @@ function trackItem() {
 
 
 /* =========================
-   DISPLAY REQUEST
+   DISPLAY REQUEST (Visual Tracker)
 ========================= */
 function displayResult(data, inputId) {
 
-    const pill = document.getElementById('statusPill');
     const resultArea = document.getElementById('resultArea');
-    const descBox = document.getElementById('statusDesc');
+    const status = data.status || "pending";
+    const name = data.name || "N/A";
+    const date = data.created_at ? new Date(data.created_at).toLocaleDateString() : "N/A";
 
-    document.getElementById('resIdDisplay').innerText = inputId;
+    // Pipeline stages: [label, sublabel]
+    const stages = [
+        ["Administration", "Request received & logged"],
+        ["Verification",   "Identity & details checked"],
+        ["Processing",     "Data located & reviewed"],
+        ["Data Prep",      "Data compiled & formatted"],
+        ["Delivery",       "Data sent to your email"]
+    ];
+
+    // How many stages are DONE per status
+    const stageMap = {
+        "pending":          0,
+        "rejected":         1,   // stopped at stage 1
+        "approved_pending": 4,   // passed 4, stuck at prep
+        "approved":         5    // all done
+    };
+
+    const doneTo = stageMap[status] !== undefined ? stageMap[status] : 0;
+
+    // Build pipeline HTML
+    let pipelineHTML = "";
+    stages.forEach((s, i) => {
+        let stepClass = "waiting";
+        let icon = (i + 1).toString();
+        let sub = s[1];
+
+        if (status === "rejected" && i === 0) {
+            stepClass = "error"; icon = "✕"; sub = "Stopped here";
+        } else if (i < doneTo) {
+            stepClass = "done"; icon = "✓";
+        } else if (status === "approved_pending" && i === 4) {
+            stepClass = "active"; icon = "⏳"; sub = "Data being prepared";
+        } else if (status === "pending" && i === 0) {
+            stepClass = "active"; icon = "…"; sub = "Awaiting review";
+        }
+
+        pipelineHTML += `
+        <div class="pipeline-step ${stepClass}">
+            <div class="step-circle">${icon}</div>
+            <div class="step-body">
+                <div class="step-label">${s[0]}</div>
+                <div class="step-sub">${sub}</div>
+            </div>
+        </div>`;
+    });
+
+    // Description message
+    const descMessages = {
+        "approved":
+            "✅ Your request has passed all 5 stages successfully. Your requested data has been sent to your email inbox. Please check your inbox (and spam folder).",
+        "approved_pending":
+            "⏳ Your request has been approved and passed 4 stages. The requested data is currently being prepared and will be sent to your email inbox shortly.",
+        "rejected":
+            "❌ Your request was rejected at the Administration stage (Stage 1). This may be due to incomplete details or policy reasons. Please check your email inbox for more information.",
+        "pending":
+            "🕐 Your request has been received and is currently pending review by our team. No action has been taken yet. Please check back later."
+    };
+
+    const desc = descMessages[status] || descMessages["pending"];
+
+    // Badge label
+    const badgeLabels = {
+        "approved": "Approved",
+        "approved_pending": "Approved — Data Pending",
+        "rejected": "Rejected",
+        "pending": "Pending"
+    };
 
     resultArea.style.display = "block";
-    document.getElementById('resName').innerText = data.name || "N/A";
-    document.getElementById('resDate').innerText =
-        data.created_at ? new Date(data.created_at).toLocaleDateString() : "N/A";
-
-    const status = data.status || "pending";
-
-    pill.innerText = status.toUpperCase();
-    pill.className = "status-pill bg-" + status;
-
-    descBox.innerHTML = "Request is being processed. Please check your email inbox";
+    resultArea.innerHTML = `
+    <div class="track-result">
+        <div class="track-id-bar">📋 ID: ${inputId}</div>
+        <div class="track-info">
+            <b>Applicant:</b> ${name}<br>
+            <b>Submitted:</b> ${date}
+        </div>
+        <div>
+            <span class="track-status-badge badge-${status}">${badgeLabels[status] || status.toUpperCase()}</span>
+        </div>
+        <div class="track-pipeline">
+            <div class="track-pipeline-label">Request Progress</div>
+            <div class="pipeline-steps">
+                ${pipelineHTML}
+            </div>
+        </div>
+        <div class="track-desc-box desc-${status}">${desc}</div>
+        <button class="btn-gov" style="background:#666; font-size: 11px;" onclick="resetSearch()">New Search</button>
+    </div>`;
 }
 
 
 /* =========================
-   DISPLAY MESSAGE
+   DISPLAY MESSAGE (Visual Tracker)
 ========================= */
 function displayMessageResult(data, inputId) {
 
-    const pill = document.getElementById('statusPill');
     const resultArea = document.getElementById('resultArea');
-    const descBox = document.getElementById('statusDesc');
+    const status = data.status || "received";
+    const name = data.name || "N/A";
+    const date = data.timestamp ? new Date(data.timestamp).toLocaleDateString() : "N/A";
 
-    document.getElementById('resIdDisplay').innerText = inputId;
+    // Message pipeline stages
+    const stages = [
+        ["Received",  "Your message reached us"],
+        ["Seen",      "Our team has read your message"],
+        ["Replied",   "A reply has been sent to your email"]
+    ];
+
+    const stageMap = {
+        "pending":  0,
+        "received": 1,
+        "seen":     2,
+        "replied":  3
+    };
+
+    const doneTo = stageMap[status] !== undefined ? stageMap[status] : 1;
+
+    let pipelineHTML = "";
+    stages.forEach((s, i) => {
+        let stepClass = "waiting";
+        let icon = (i + 1).toString();
+        let sub = s[1];
+
+        if (i < doneTo) {
+            stepClass = "done"; icon = "✓";
+        } else if (i === doneTo && status !== "replied") {
+            stepClass = "active"; icon = "…";
+            if (status === "received") sub = "Awaiting review";
+            if (status === "seen")     sub = "Reply being drafted";
+        }
+
+        pipelineHTML += `
+        <div class="pipeline-step ${stepClass}">
+            <div class="step-circle">${icon}</div>
+            <div class="step-body">
+                <div class="step-label">${s[0]}</div>
+                <div class="step-sub">${sub}</div>
+            </div>
+        </div>`;
+    });
+
+    const descMessages = {
+        "received": "📥 Your message has been received by ELWOIC. Our team will review it shortly.",
+        "seen":     "👁 Your message has been seen by our team. A reply is being drafted for you.",
+        "replied":  "✅ Our team has replied to your message. Please check your email inbox for the response.",
+        "pending":  "🕐 Your message is in the queue and has not been reviewed yet. Please check back later."
+    };
+
+    const badgeLabels = {
+        "received": "Received",
+        "seen":     "Seen by Team",
+        "replied":  "Replied",
+        "pending":  "Pending"
+    };
+
+    const badgeClass = status === "replied" ? "approved"
+                     : status === "seen"    ? "approved_pending"
+                     : status === "pending" ? "pending"
+                     : "approved";
 
     resultArea.style.display = "block";
-    document.getElementById('resName').innerText = data.name || "N/A";
-    document.getElementById('resDate').innerText =
-        data.timestamp ? new Date(data.timestamp).toLocaleDateString() : "N/A";
-
-    const status = data.status || "received";
-
-    pill.innerText = status.toUpperCase();
-    pill.className = "status-pill bg-" + status;
-
-    let message = "";
-
-    switch(status) {
-        case 'received':
-            message = "Message received.";
-            break;
-        case 'seen':
-            message = "Message reviewed.";
-            break;
-        case 'replied':
-            message = "Reply sent.";
-            break;
-        default:
-            message = "Processing...";
-    }
-
-    descBox.innerHTML = message;
+    resultArea.innerHTML = `
+    <div class="track-result">
+        <div class="track-id-bar">📨 REF: ${inputId}</div>
+        <div class="track-info">
+            <b>Sender:</b> ${name}<br>
+            <b>Received:</b> ${date}
+        </div>
+        <div>
+            <span class="track-status-badge badge-${badgeClass}">${badgeLabels[status] || status.toUpperCase()}</span>
+        </div>
+        <div class="track-pipeline">
+            <div class="track-pipeline-label">Message Progress</div>
+            <div class="pipeline-steps">
+                ${pipelineHTML}
+            </div>
+        </div>
+        <div class="track-desc-box desc-${status}">${descMessages[status] || descMessages["pending"]}</div>
+        <button class="btn-gov" style="background:#666; font-size: 11px;" onclick="resetSearch()">New Search</button>
+    </div>`; 
 }
+
 /* =========================
    RESET
 ========================= */
