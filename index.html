@@ -18,6 +18,10 @@
 }
 
 /* GLOBAL RESET */
+*, *::before, *::after {
+    box-sizing: border-box; /* Padding never causes overflow */
+}
+
 html, body {
     margin: 0;
     padding: 0;
@@ -151,8 +155,14 @@ body {
 /* GRID */
 .portal-grid {
     display: grid;
-    grid-template-columns: 1fr 320px;
+    grid-template-columns: 1fr minmax(0, 320px);
     gap: 30px;
+    min-width: 0;
+}
+
+.portal-grid > main,
+.portal-grid > aside {
+    min-width: 0; /* Critical — prevents grid children from overflowing */
 }
 
 /* SECTION TITLE */
@@ -286,6 +296,8 @@ body {
     background: white;
     margin-bottom: 25px;
     border-top: 4px solid var(--gov-blue);
+    width: 100%;
+    min-width: 0;
 }
 
 .sidebar-box h3 {
@@ -645,7 +657,7 @@ img {
                     <label>Security Verification</label>
                     <div class="captcha-container">
                         <span id="captchaCode">CODE</span>
-                        <input type="text" id="captchaInput" style="width: 100px; padding: 8px; border: 1px solid #ccc;">
+                        <input type="text" id="captchaInput" style="flex: 1; min-width: 0; padding: 8px; border: 1px solid #ccc;">
                     </div>
                 </div>
                 
@@ -885,10 +897,16 @@ function displayMessageResult(data, inputId) {
 
     descBox.innerHTML = message;
 }
-
-
 /* =========================
    RESET
 ========================= */
 function resetSearch() {
-    document.getEleme
+    document.getElementById('resultArea').style.display = "none";
+    document.getElementById('searchSection').style.display = "block";
+    document.getElementById('requestIdInput').value = "";
+    generateCaptcha();
+}
+</script>
+
+</body>
+</html>
