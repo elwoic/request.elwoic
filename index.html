@@ -22,6 +22,7 @@ html, body {
     margin: 0;
     padding: 0;
     max-width: 100%;
+    overflow-x: hidden; /* Prevent full-page horizontal scroll from wide table */
 }
 
 /* BODY */
@@ -35,7 +36,7 @@ body {
     background-attachment: fixed;
 }
 
-/* CONTAINER */
+/* CONTAINER — used everywhere now */
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -47,6 +48,8 @@ body {
     border-bottom: 3px solid var(--gov-gold);
     padding: 15px 0;
     background: #fff;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .header-flex {
@@ -80,6 +83,24 @@ body {
     font-weight: 600;
 }
 
+/* HEADER RIGHT TEXT */
+.header-right {
+    text-align: right;
+    font-family: 'Manjari', sans-serif;
+    flex-shrink: 0;
+}
+
+.header-right .malayalam-title {
+    font-weight: bold;
+    color: var(--gov-blue);
+    font-size: 18px;
+}
+
+.header-right .tagline {
+    font-size: 11px;
+    color: var(--gov-gold);
+}
+
 /* NAV */
 .nav-bar {
     background: var(--gov-blue);
@@ -87,15 +108,44 @@ body {
     padding: 12px 0;
     font-size: 13px;
     font-weight: 500;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.nav-bar span {
-    margin-right: 20px;
+/* FIX 2: Nav links — flex wrap instead of raw spans with | separators */
+.nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 4px;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links li {
+    display: flex;
+    align-items: center;
+}
+
+.nav-links li a,
+.nav-links li span {
+    color: white;
+    text-decoration: none;
     cursor: pointer;
+    padding: 4px 10px;
+    white-space: nowrap;
 }
 
-.nav-bar span:hover {
+.nav-links li a:hover,
+.nav-links li span:hover {
     text-decoration: underline;
+}
+
+.nav-links li.sep {
+    color: rgba(255,255,255,0.4);
+    padding: 0 2px;
+    user-select: none;
 }
 
 /* GRID */
@@ -263,6 +313,7 @@ label {
     padding: 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
+    box-sizing: border-box;
 }
 
 .captcha-container {
@@ -300,8 +351,11 @@ label {
     background: #1a1a1a;
     color: #bbb;
     padding: 60px 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
+/* FIX 3 & 4: footer-grid now uses .container for centering */
 .footer-grid {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr;
@@ -343,10 +397,27 @@ img {
         background-size: 80%;
     }
 
+    /* FIX 1: Header stacks cleanly on mobile */
     .header-flex {
         flex-direction: column;
         align-items: flex-start;
-        gap: 10px;
+        gap: 12px;
+    }
+
+    .header-right {
+        text-align: left;
+    }
+
+    .header-right .malayalam-title {
+        font-size: 15px;
+    }
+
+    .brand-text h1 {
+        font-size: 18px;
+    }
+
+    .brand img {
+        height: 55px;
     }
 
     .promo-grid {
@@ -362,14 +433,26 @@ img {
     .data-table td {
         padding: 8px;
     }
+
+    /* Nav font size slightly smaller on tiny screens */
+    .nav-links li a,
+    .nav-links li span {
+        font-size: 12px;
+        padding: 4px 6px;
+    }
+
+    .nav-links li.sep {
+        display: none; /* hide | separators on mobile, flex gap handles spacing */
+    }
 }
 
     </style>
 </head>
 <body>
 
+<!-- ✅ FIX 1 & 4: header now uses .container (same as body content) -->
 <header class="gov-header">
-    <div class="header-container header-flex">
+    <div class="container header-flex">
         <div class="brand">
             <img src="images/ELWOIC.png" alt="ELWOIC Emblem">
             <div class="brand-text">
@@ -377,104 +460,105 @@ img {
                 <p>OFFICIAL WEATHER OBSERVATION & CITIZEN RECORDS</p>
             </div>
         </div>
-        <div style="text-align: right; font-family: 'Manjari';">
-            <div style="font-weight: bold; color: var(--gov-blue); font-size: 18px;">ഏലംകുളം ലോക്കൽ വെതർ സ്റ്റേഷൻ</div>
-            <div style="font-size: 11px; color: var(--gov-gold);">An Initiative for Public Data Transparency</div>
+        <!-- ✅ FIX 1: Proper class for header right text, responsive -->
+        <div class="header-right">
+            <div class="malayalam-title">ഏലംകുളം ലോക്കൽ വെതർ സ്റ്റേഷൻ</div>
+            <div class="tagline">An Initiative for Public Data Transparency</div>
         </div>
     </div>
 </header>
 
-<div class="nav-bar">
+<!-- ✅ FIX 2: Nav uses flex list instead of raw spans with | text separators -->
+<nav class="nav-bar">
     <div class="container">
-        <a href="https://elwoic.in/" style="text-decoration: none; color: inherit;">
-            <span>HOME</span>
-        </a> 
-        | 
-        <span>LIVE WEATHER</span> 
-        | 
-        <a href="request-form.html" style="text-decoration: none; color: inherit;">
-            <span>DATA REQUEST</span>
-        </a> 
-        | 
-        <span>CLIMATE ARCHIVE</span> 
-        | 
-        <span>ABOUT US</span>
+        <ul class="nav-links">
+            <li><a href="https://elwoic.in/">HOME</a></li>
+            <li class="sep">|</li>
+            <li><span>LIVE WEATHER</span></li>
+            <li class="sep">|</li>
+            <li><a href="request-form.html">DATA REQUEST</a></li>
+            <li class="sep">|</li>
+            <li><span>CLIMATE ARCHIVE</span></li>
+            <li class="sep">|</li>
+            <li><span>ABOUT US</span></li>
+        </ul>
     </div>
-</div>
+</nav>
 
 <div class="container portal-grid">
     
     <main>
         <div class="section-title">Verified Data Availability</div>
 
-<div class="table-wrapper">
-    <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Data Parameter</th>
-                    <th>Station ID</th>
-                    <th>Frequency</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-    <tr>
-        <td>Temperature (°C)</td>
-        <td>ELWOIC-01</td>
-        <td>Every 60 Minutes</td>
-        <td><span class="status-online">• ONLINE</span></td>
-    </tr>
-    <tr>
-        <td>Humidity (%)</td>
-        <td>ELWOIC-01</td>
-        <td>Every 60 seconds</td>
-        <td><span class="status-online">• ONLINE</span></td>
-    </tr>
-    <tr>
-        <td>Rainfall (mm)</td>
-        <td>ELWOIC-01</td>
-        <td>Real-time (event based)</td>
-        <td><span class="status-online">• ONLINE</span></td>
-    </tr>
-    <tr>
-        <td>Wind Speed (km/h)</td>
-        <td>ELWOIC-01</td>
-        <td>Every 60 Minutes</td> 
-        <td><span class="status-online">• ONLINE</span></td>
-    </tr>
-    <tr>
-        <td>Wind Direction</td>
-        <td>ELWOIC-01</td>
-        <td>-------</td>
-        <td><span class="status-coming">COMING SOON</span></td>
-    </tr>
-    <tr>
-        <td>Atmospheric Pressure (hPa)</td>
-        <td>ELWOIC-01</td>
-        <td>Every 60 Minutes</td>
-        <td><span class="status-online">• ONLINE</span></td>
-    </tr>
-    <tr>
-        <td>UV Index</td>
-        <td>ELWOIC-01</td>
-        <td>-------</td>
-        <td><span class="status-coming">COMING SOON</span></td>
-    </tr>
-    <tr>
-        <td>Air Quality (PM2.5)</td>
-        <td>ELWOIC-01</td>
-        <td>Every 60 seconds</td>
-        <td><span class="status-online">• ONLINE</span></td>
-    </tr>
-    <tr>
-        <td>Visibility</td>
-        <td>ELWOIC-01</td>
-        <td>Every 60 Minutes</td>
-        <td><span class="status-online">• ONLINE</span></td>
-    </tr>
-</tbody>
-        </table>
-</div>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Data Parameter</th>
+                        <th>Station ID</th>
+                        <th>Frequency</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Temperature (°C)</td>
+                        <td>ELWOIC-01</td>
+                        <td>Every 60 Minutes</td>
+                        <td><span class="status-online">• ONLINE</span></td>
+                    </tr>
+                    <tr>
+                        <td>Humidity (%)</td>
+                        <td>ELWOIC-01</td>
+                        <td>Every 60 seconds</td>
+                        <td><span class="status-online">• ONLINE</span></td>
+                    </tr>
+                    <tr>
+                        <td>Rainfall (mm)</td>
+                        <td>ELWOIC-01</td>
+                        <td>Real-time (event based)</td>
+                        <td><span class="status-online">• ONLINE</span></td>
+                    </tr>
+                    <tr>
+                        <td>Wind Speed (km/h)</td>
+                        <td>ELWOIC-01</td>
+                        <td>Every 60 Minutes</td>
+                        <td><span class="status-online">• ONLINE</span></td>
+                    </tr>
+                    <tr>
+                        <td>Wind Direction</td>
+                        <td>ELWOIC-01</td>
+                        <td>-------</td>
+                        <td><span class="status-coming">COMING SOON</span></td>
+                    </tr>
+                    <tr>
+                        <td>Atmospheric Pressure (hPa)</td>
+                        <td>ELWOIC-01</td>
+                        <td>Every 60 Minutes</td>
+                        <td><span class="status-online">• ONLINE</span></td>
+                    </tr>
+                    <tr>
+                        <td>UV Index</td>
+                        <td>ELWOIC-01</td>
+                        <td>-------</td>
+                        <td><span class="status-coming">COMING SOON</span></td>
+                    </tr>
+                    <tr>
+                        <td>Air Quality (PM2.5)</td>
+                        <td>ELWOIC-01</td>
+                        <td>Every 60 seconds</td>
+                        <td><span class="status-online">• ONLINE</span></td>
+                    </tr>
+                    <tr>
+                        <td>Visibility</td>
+                        <td>ELWOIC-01</td>
+                        <td>Every 60 Minutes</td>
+                        <td><span class="status-online">• ONLINE</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
         <div class="section-title">കാലാവസ്ഥാ വിവരങ്ങൾ എന്തിന് അറിയണം?</div>
         
         <div class="point-box">
@@ -491,10 +575,12 @@ img {
             <h3>3. ഇൻഷുറൻസ് & ഔദ്യോഗിക രേഖകൾ</h3>
             <p>കനത്ത മഴയോ കാറ്റോ മൂലം നാശനഷ്ടങ്ങൾ ഉണ്ടാകുമ്പോൾ, ആ സമയത്തെ കൃത്യമായ കാലാവസ്ഥാ വിവരങ്ങൾ തെളിവായി നൽകാൻ ഈ ഡാറ്റാബേസ് സഹായിക്കും. ഇൻഷുറൻസ് ക്ലെയിമുകൾക്കും മറ്റും പ്രാദേശികമായ ഇത്തരം വിവരങ്ങൾ വളരെ വിലപ്പെട്ടതാണ്.</p>
         </div>
+
         <div class="point-box">
             <h3>4. മുൻകൂട്ടിയുള്ള പ്ലാനിംഗുകൾ</h3>
             <p>വിവാഹങ്ങൾ, സ്കൂൾ പരിപാടികൾ, അല്ലെങ്കിൽ കായിക മത്സരങ്ങൾ എന്നിവ പ്ലാൻ ചെയ്യുമ്പോൾ കഴിഞ്ഞ വർഷങ്ങളിൽ ആ തീയതികളിൽ മഴ പെയ്തിരുന്നോ എന്ന് പരിശോധിക്കുന്നത് പരിപാടികൾ തടസ്സമില്ലാതെ നടത്താൻ സഹായിക്കും.</p>
         </div>
+
         <div class="point-box">
             <h3>5. ഗവേഷണവും പഠനവും</h3>
             <p>വിദ്യാർത്ഥികൾക്കും ഗവേഷകർക്കും നമ്മുടെ നാടിന്റെ കാലാവസ്ഥാ വ്യതിയാനങ്ങളെക്കുറിച്ച് പഠിക്കാൻ ELWOIC-ന്റെ ഈ ഡാറ്റാബേസ് ഒരു വലിയ വിജ്ഞാനശേഖരമാണ്. ഇത് ഭാവിയെക്കുറിച്ച് പുതിയ പദ്ധതികൾ തയ്യാറാക്കാൻ സഹായിക്കുന്നു.</p>
@@ -502,45 +588,39 @@ img {
 
         <div class="section-title">Our Digital Services</div>
 
-<div class="promo-grid">
+        <div class="promo-grid">
+            <a href="https://elwoic.in/index.html" class="promo-card">
+                <img src="images/dashboard.png" class="promo-img" alt="Dashboard">
+                <div class="promo-content">
+                    <h4>Real-time Dashboard</h4>
+                    <p>Live atmospheric readings from the ELWOIC central station in Elamkulam.</p>
+                </div>
+            </a>
 
-    <!-- 1. Real-time Dashboard -->
-    <a href="https://elwoic.in/index.html" class="promo-card">
-        <img src="images/dashboard.png" class="promo-img" alt="Dashboard">
-        <div class="promo-content">
-            <h4>Real-time Dashboard</h4>
-            <p>Live atmospheric readings from the ELWOIC central station in Elamkulam.</p>
+            <a href="https://request.elwoic.in/request-form.html" class="promo-card">
+                <img src="images/request.png" class="promo-img" alt="Request System">
+                <div class="promo-content">
+                    <h4>Data Request System</h4>
+                    <p>Request verified historical weather data for research, agriculture, and official use.</p>
+                </div>
+            </a>
+
+            <a href="https://elwoic.in/Forecast.html" class="promo-card">
+                <img src="images/awareness.png" class="promo-img" alt="Community Awareness">
+                <div class="promo-content">
+                    <h4>Citizen Awareness</h4>
+                    <p>Weather-based activity guidance and safety recommendations for the public.</p>
+                </div>
+            </a>
+
+            <a href="#" class="promo-card">
+                <img src="images/records.png" class="promo-img" alt="Records System">
+                <div class="promo-content">
+                    <h4>Verified Records System</h4>
+                    <p>Secure storage of historical weather data for verification and official reference.</p>
+                </div>
+            </a>
         </div>
-    </a>
-
-    <!-- 2. Data Request -->
-    <a href="https://request.elwoic.in/request-form.html" class="promo-card">
-        <img src="images/request.png" class="promo-img" alt="Request System">
-        <div class="promo-content">
-            <h4>Data Request System</h4>
-            <p>Request verified historical weather data for research, agriculture, and official use.</p>
-        </div>
-    </a>
-
-    <!-- 3. Community Awareness -->
-    <a href="https://elwoic.in/Forecast.html" class="promo-card">
-        <img src="images/awareness.png" class="promo-img" alt="Community Awareness">
-        <div class="promo-content">
-            <h4>Citizen Awareness</h4>
-            <p>Weather-based activity guidance and safety recommendations for the public.</p>
-        </div>
-    </a>
-
-    <!-- 4. Verified Records -->
-    <a href="#" class="promo-card">
-        <img src="images/records.png" class="promo-img" alt="Records System">
-        <div class="promo-content">
-            <h4>Verified Records System</h4>
-            <p>Secure storage of historical weather data for verification and official reference.</p>
-        </div>
-    </a>
-
-</div>
 
     </main>
 
@@ -548,13 +628,13 @@ img {
         <div class="sidebar-box">
             <h3>Request Tracking</h3>
             <div id="searchSection">
-              <div class="input-group">
-  <label>Tracking Type</label>
-  <select id="trackType" class="gov-input">
-    <option value="request">Request Tracking</option>
-    <option value="message">Message Tracking</option>
-  </select>
-</div>
+                <div class="input-group">
+                    <label>Tracking Type</label>
+                    <select id="trackType" class="gov-input">
+                        <option value="request">Request Tracking</option>
+                        <option value="message">Message Tracking</option>
+                    </select>
+                </div>
 
                 <div class="input-group">
                     <label>Reference Number</label>
@@ -599,8 +679,9 @@ img {
     </aside>
 </div>
 
+<!-- ✅ FIX 3 & 4: footer now uses .container for consistent centering/padding -->
 <footer class="gov-footer">
-    <div class="footer-container footer-grid">
+    <div class="container footer-grid">
         <div>
             <img src="images/ELWOIC.png" class="footer-logo" alt="ELWOIC">
             <p><strong>ELWOIC Elamkulam</strong><br>
@@ -614,14 +695,14 @@ img {
         </div>
         <div>
             <strong>Contact Desk</strong><br><br>
-            info@elwoic.in<br>
+            <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="6c05020a032c09001b03050f420502">[email&#160;protected]</a><br>
             04933 316 750<br>
             Elamkulam, Malappuram, Kerala
         </div>
     </div>
 </footer>
 
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
@@ -674,7 +755,7 @@ generateCaptcha();
 
 
 /* =========================
-   TRACK ITEM (FIXED)
+   TRACK ITEM
 ========================= */
 function trackItem() {
 
@@ -701,7 +782,7 @@ function trackItem() {
     } else {
         db = messageDB;
         refPath = "messages";
-        field = "refNumber"; // ⚠️ IMPORTANT: must exist in DB
+        field = "refNumber";
     }
 
     db.ref(refPath)
@@ -810,13 +891,4 @@ function displayMessageResult(data, inputId) {
    RESET
 ========================= */
 function resetSearch() {
-    document.getElementById('resultArea').style.display = "none";
-    document.getElementById('searchSection').style.display = "block";
-    document.getElementById('requestIdInput').value = "";
-    generateCaptcha();
-}
-</script>
-
-
-</body>
-</html>
+    document.getEleme
