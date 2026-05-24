@@ -3,9 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>ELWOIC Data Request Form</title>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
 <style>
 body {
     font-family: "Times New Roman", serif;
@@ -37,6 +35,12 @@ body {
     font-size: 10px;
 }
 
+.logo img, .small-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
 .title {
     text-align: center;
     margin-top: 10px;
@@ -56,16 +60,19 @@ label {
     margin-bottom: 5px;
 }
 
-input, textarea {
+input, textarea, select {
     width: 100%;
     padding: 8px;
     border: 1px solid #000;
     font-family: inherit;
+    font-size: 14px;
     box-sizing: border-box;
+    background: white;
 }
 
 textarea {
     height: 80px;
+    resize: vertical;
 }
 
 .row {
@@ -77,13 +84,15 @@ textarea {
     flex: 1;
 }
 
-.logo img, .small-logo img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+/* Date fields toggle */
+.date-section {
+    display: none;
+}
+.date-section.visible {
+    display: block;
 }
 
-/* Updated Layout Elements */
+/* Pre-submit */
 .pre-submit-area {
     margin-top: 40px;
     display: flex;
@@ -127,11 +136,27 @@ button {
     border: none;
     cursor: pointer;
     font-weight: bold;
+    font-family: inherit;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background: #333;
+}
+
+button:disabled {
+    background: #999;
+    cursor: not-allowed;
 }
 
 .pdf-btn {
     background: #444;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
+}
+
+.pdf-btn:hover {
+    background: #222;
 }
 
 .checkbox-line {
@@ -141,14 +166,37 @@ button {
     margin-top: 15px;
 }
 
+.checkbox-line input[type="checkbox"] {
+    width: auto;
+    padding: 0;
+}
+
 .note {
     font-size: 12px;
     margin-top: 5px;
+    color: #555;
 }
 
-/* Hide buttons and cutting line during PDF generation */
-.no-print {
-    display: block;
+.success-msg {
+    display: none;
+    margin-top: 15px;
+    padding: 12px;
+    background: #e6ffe6;
+    border: 1px solid #006600;
+    color: #006600;
+    font-size: 14px;
+    text-align: center;
+}
+
+.error-msg {
+    display: none;
+    margin-top: 15px;
+    padding: 12px;
+    background: #ffe6e6;
+    border: 1px solid #cc0000;
+    color: #cc0000;
+    font-size: 14px;
+    text-align: center;
 }
 </style>
 </head>
@@ -186,7 +234,6 @@ button {
                 <label>Email (Required)</label>
                 <input type="email" name="email" required>
             </div>
-
             <div class="form-group">
                 <label>Phone / WhatsApp (Optional)</label>
                 <input type="text" name="phone">
@@ -205,34 +252,37 @@ button {
                 required>
         </div>
 
+        <!-- Type of Request — drives which date fields show -->
         <div class="form-group">
             <label>Type of Request</label>
-            <input type="text" name="type"
-                placeholder="e.g., Specific Date & Time OR Date Range"
-                required>
+            <select name="type" id="requestType" required onchange="toggleDateFields()">
+                <option value="">-- Select Request Type --</option>
+                <option value="Specific Date & Time">Specific Date &amp; Time</option>
+                <option value="Date Range">Date Range</option>
+            </select>
         </div>
 
-        <div class="row">
+        <!-- Specific Date & Time fields -->
+        <div class="date-section row" id="specificDateSection">
             <div class="form-group">
                 <label>Date</label>
-                <input type="date" name="date">
+                <input type="date" name="date" id="specificDate">
             </div>
-
             <div class="form-group">
                 <label>Time</label>
-                <input type="time" name="time">
+                <input type="time" name="time" id="specificTime">
             </div>
         </div>
 
-        <div class="row">
+        <!-- Date Range fields -->
+        <div class="date-section row" id="dateRangeSection">
             <div class="form-group">
                 <label>From Date</label>
-                <input type="date" name="from_date">
+                <input type="date" name="from_date" id="fromDate">
             </div>
-
             <div class="form-group">
                 <label>To Date</label>
-                <input type="date" name="to_date">
+                <input type="date" name="to_date" id="toDate">
             </div>
         </div>
 
@@ -243,10 +293,8 @@ button {
 
         <div class="form-group">
             <label>Declaration</label>
-            <textarea readonly>
-I hereby request weather data from ELWOIC for the purpose mentioned above.
-I agree that the data will be used only for educational and non-commercial purposes.
-            </textarea>
+            <textarea readonly>I hereby request weather data from ELWOIC for the purpose mentioned above.
+I agree that the data will be used only for educational and non-commercial purposes.</textarea>
 
             <div class="checkbox-line">
                 <input type="checkbox" id="agree" required>
@@ -264,90 +312,104 @@ I agree that the data will be used only for educational and non-commercial purpo
             </div>
         </div>
 
-        <div class="cutting-line no-print"></div>
+        <div class="cutting-line"></div>
 
-        <div class="no-print">
-           <button onclick="downloadPDF()">Download as PDF</button>
-            <button type="submit">Submit Request</button>
-        </div>
+        <button type="button" class="pdf-btn" onclick="downloadPDF()">Download as PDF</button>
+        <button type="submit" id="submitBtn">Submit Request</button>
+
+        <div class="success-msg" id="successMsg"></div>
+        <div class="error-msg" id="errorMsg"></div>
 
     </form>
 
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-
 <script>
+// ── Worker URL — only thing you set here ──────────────────
+const WORKER_URL = "https://your-form-worker.workers.dev";
+
+// ── Show / hide date fields based on request type ─────────
+function toggleDateFields() {
+    const type = document.getElementById("requestType").value;
+
+    const specificSection = document.getElementById("specificDateSection");
+    const rangeSection    = document.getElementById("dateRangeSection");
+
+    // Hide both first
+    specificSection.classList.remove("visible");
+    rangeSection.classList.remove("visible");
+
+    // Clear all date/time values when switching
+    document.getElementById("specificDate").value = "";
+    document.getElementById("specificTime").value = "";
+    document.getElementById("fromDate").value     = "";
+    document.getElementById("toDate").value       = "";
+
+    if (type === "Specific Date & Time") {
+        specificSection.classList.add("visible");
+    } else if (type === "Date Range") {
+        rangeSection.classList.add("visible");
+    }
+}
+
+// ── PDF Download ──────────────────────────────────────────
 function downloadPDF() {
     window.location.href = "ELWOIC_Styled_Form.pdf";
 }
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCCGNGzhBWETU0gyTUeA2wUVnlQbl2-khU",
-  authDomain: "data-request-161d5.firebaseapp.com",
-  databaseURL: "https://data-request-161d5-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "data-request-161d5",
-  storageBucket: "data-request-161d5.firebasestorage.app",
-  messagingSenderId: "664050584515",
-  appId: "1:664050584515:web:5597b505cc5d2ef01e0b76"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-emailjs.init("p5ikS_d-yFWcyzvac");
-
-document.getElementById("dataRequestForm").addEventListener("submit", function(e) {
+// ── Form Submit ───────────────────────────────────────────
+document.getElementById("dataRequestForm").addEventListener("submit", async function(e) {
     e.preventDefault();
 
-    const requestId = "ELWOIC-" + Date.now();
+    const submitBtn = document.getElementById("submitBtn");
+    const successMsg = document.getElementById("successMsg");
+    const errorMsg   = document.getElementById("errorMsg");
+
+    successMsg.style.display = "none";
+    errorMsg.style.display   = "none";
+    submitBtn.disabled       = true;
+    submitBtn.textContent    = "Submitting...";
 
     const data = {
-        requestId,
-        name: this.name.value,
-        email: this.email.value,
-        phone: this.phone.value || "Not Provided",
-        purpose: this.purpose.value,
-        parameters: this.parameters.value,
-        type: this.type.value,
-        date: this.date.value,
-        time: this.time.value,
-        from_date: this.from_date.value,
-        to_date: this.to_date.value,
-        additional_details: this.additional_details.value,
-        status: "pending",
-        created_at: new Date().toISOString()
+        name:               this.name.value.trim(),
+        email:              this.email.value.trim(),
+        phone:              this.phone.value.trim(),
+        purpose:            this.purpose.value.trim(),
+        parameters:         this.parameters.value.trim(),
+        type:               this.type.value,
+        date:               this.date.value               || null,
+        time:               this.time.value               || null,
+        from_date:          this.from_date.value          || null,
+        to_date:            this.to_date.value            || null,
+        additional_details: this.additional_details.value.trim()
     };
 
-    db.ref("requests").push(data);
+    try {
+        const res = await fetch(WORKER_URL, {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify(data)
+        });
 
-    fetch("https://formspree.io/f/xpqybddq", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-    });
+        const result = await res.json();
 
-   emailjs.send("service_3br5mjc", "template_tzvvv1c", {
-        name: data.name,
-        email: data.email,
-        requestId: data.requestId,
-        parameters: data.parameters,
-        type: data.type,
-        date: data.date,
-        time: data.time,
-        from_date: data.from_date,
-        to_date: data.to_date,
-        status_message: "Your data request has been successfully submitted to ELWOIC.",
-        message: "We will review your request and respond shortly."
-    })
-    .then(() => console.log("Email sent"))
-    .catch(err => console.error("Email error:", err));
+        if (res.ok && result.success) {
+            successMsg.textContent = `Request submitted successfully! Your Request ID is: ${result.request_id}`;
+            successMsg.style.display = "block";
+            this.reset();
+            toggleDateFields(); // reset date fields visibility
+        } else {
+            throw new Error(result.error || "Submission failed");
+        }
 
-    alert("Request submitted successfully!\nRequest ID: " + requestId);
-    this.reset();
+    } catch (err) {
+        errorMsg.textContent = "Submission failed. Please try again or contact us directly.";
+        errorMsg.style.display = "block";
+        console.error(err);
+    } finally {
+        submitBtn.disabled    = false;
+        submitBtn.textContent = "Submit Request";
+    }
 });
 </script>
 
