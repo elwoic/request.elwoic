@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>  
+<head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ELWOIC Data Request Form</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
@@ -50,6 +51,47 @@ body {
     font-size: 14px;
 }
 
+/* Google One Tap hint banner */
+.google-hint {
+    display: none;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #f0f7ff;
+    border: 1px solid #4285f4;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #1a73e8;
+    align-items: center;
+    gap: 8px;
+}
+.google-hint.visible {
+    display: flex;
+}
+.google-hint-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+.google-hint button {
+    margin: 0;
+    padding: 3px 10px;
+    width: auto;
+    background: #1a73e8;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: inherit;
+}
+.google-hint .dismiss {
+    background: transparent;
+    color: #999;
+    font-size: 16px;
+    padding: 0 4px;
+    margin-left: auto;
+}
+
 .form-group {
     margin-top: 20px;
 }
@@ -58,6 +100,13 @@ label {
     font-weight: bold;
     display: block;
     margin-bottom: 5px;
+}
+
+.optional-label {
+    font-weight: normal;
+    font-size: 12px;
+    color: #666;
+    margin-left: 4px;
 }
 
 input, textarea, select {
@@ -75,6 +124,10 @@ textarea {
     resize: vertical;
 }
 
+select {
+    cursor: pointer;
+}
+
 .row {
     display: flex;
     gap: 20px;
@@ -82,6 +135,19 @@ textarea {
 
 .row .form-group {
     flex: 1;
+}
+
+/* Section divider */
+.section-divider {
+    margin-top: 28px;
+    margin-bottom: 4px;
+    border-top: 1px solid #ccc;
+    padding-top: 18px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #555;
 }
 
 /* Date fields toggle */
@@ -141,23 +207,11 @@ button {
     transition: background 0.2s;
 }
 
-button:hover {
-    background: #333;
-}
+button:hover { background: #333; }
+button:disabled { background: #999; cursor: not-allowed; }
 
-button:disabled {
-    background: #999;
-    cursor: not-allowed;
-}
-
-.pdf-btn {
-    background: #444;
-    margin-bottom: 5px;
-}
-
-.pdf-btn:hover {
-    background: #222;
-}
+.pdf-btn { background: #444; margin-bottom: 5px; }
+.pdf-btn:hover { background: #222; }
 
 .checkbox-line {
     display: flex;
@@ -203,6 +257,9 @@ button:disabled {
 
 <body>
 
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
 <div class="container" id="form-content">
 
     <div class="header">
@@ -222,59 +279,109 @@ button:disabled {
         </div>
     </div>
 
-    <form id="dataRequestForm">
+    <form id="dataRequestForm" autocomplete="off">
+
+        <!-- ── SECTION: PERSONAL DETAILS ───────────────── -->
+        <div class="section-divider">Personal Details</div>
 
         <div class="form-group">
             <label>Full Name</label>
-            <input type="text" name="name" required>
+            <input type="text" name="name" required placeholder="As per official records">
         </div>
 
         <div class="row">
             <div class="form-group">
-                <label>Email (Required)</label>
-                <input type="email" name="email" required>
+                <label>Email Address <span style="color:red;">*</span></label>
+                <input type="email" name="email" id="emailField" required placeholder="Your active email address">
+                <!-- Google hint shown here -->
+                <div class="google-hint" id="googleHint">
+                    <img class="google-hint-icon" src="https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png" alt="G">
+                    <span id="googleHintText">Use your Google account email?</span>
+                    <button type="button" onclick="applyGoogleEmail()">Use this</button>
+                    <button type="button" class="dismiss" onclick="dismissHint()" title="Dismiss">×</button>
+                </div>
             </div>
             <div class="form-group">
-                <label>Phone / WhatsApp (Optional)</label>
-                <input type="text" name="phone">
+                <label>Phone / WhatsApp <span class="optional-label">(Optional)</span></label>
+                <input type="text" name="phone" placeholder="+91 XXXXX XXXXX">
             </div>
         </div>
 
+        <div class="row">
+            <div class="form-group">
+                <label>Organisation / Institution <span class="optional-label">(If any)</span></label>
+                <input type="text" name="organisation" placeholder="e.g., Government College Kasaragod">
+            </div>
+            <div class="form-group">
+                <label>Designation / Role <span class="optional-label">(If any)</span></label>
+                <input type="text" name="designation" placeholder="e.g., Student, Researcher, Journalist">
+            </div>
+        </div>
+
+        <!-- ── SECTION: REQUEST DETAILS ────────────────── -->
+        <div class="section-divider">Request Details</div>
+
         <div class="form-group">
-            <label>Purpose of Data Request</label>
-            <textarea name="purpose" required></textarea>
+            <label>Purpose Category <span style="color:red;">*</span></label>
+            <select name="purpose_category" required>
+                <option value="">-- Select Category --</option>
+                <option value="Research">Research</option>
+                <option value="Education">Education</option>
+                <option value="Personal">Personal</option>
+                <option value="Commercial">Commercial</option>
+                <option value="Government / Official">Government / Official</option>
+                <option value="Media / Journalism">Media / Journalism</option>
+                <option value="Other">Other</option>
+            </select>
         </div>
 
         <div class="form-group">
-            <label>Required Parameters</label>
-            <input type="text" name="parameters"
-                placeholder="e.g., Temperature, Humidity, Wind, Rainfall, Pressure, PM2.5 / AQI"
-                required>
+            <label>Purpose of Data Request <span style="color:red;">*</span></label>
+            <textarea name="purpose" required placeholder="Briefly describe why you need this data..."></textarea>
         </div>
 
-        <!-- Type of Request — drives which date fields show -->
         <div class="form-group">
-            <label>Type of Request</label>
+            <label>Required Parameters <span style="color:red;">*</span></label>
+            <input type="text" name="parameters" required
+                placeholder="e.g., Temperature, Humidity, Wind Speed, Rainfall, Pressure, UV Index">
+        </div>
+
+        <div class="form-group">
+            <label>Preferred Response Format <span class="optional-label">(Optional)</span></label>
+            <select name="response_format">
+                <option value="">-- Select Format --</option>
+                <option value="PDF Report">PDF Report</option>
+                <option value="CSV / Excel">CSV / Excel</option>
+                <option value="JSON">JSON</option>
+                <option value="Any">Any / No Preference</option>
+            </select>
+        </div>
+
+        <!-- ── SECTION: DATE / TIME ─────────────────────── -->
+        <div class="section-divider">Date &amp; Time of Data</div>
+
+        <div class="form-group">
+            <label>Type of Request <span style="color:red;">*</span></label>
             <select name="type" id="requestType" required onchange="toggleDateFields()">
                 <option value="">-- Select Request Type --</option>
-                <option value="Specific Date & Time">Specific Date &amp; Time</option>
+                <option value="Specific Date &amp; Time">Specific Date &amp; Time</option>
                 <option value="Date Range">Date Range</option>
             </select>
         </div>
 
-        <!-- Specific Date & Time fields -->
+        <!-- Specific Date & Time -->
         <div class="date-section row" id="specificDateSection">
             <div class="form-group">
                 <label>Date</label>
                 <input type="date" name="date" id="specificDate">
             </div>
             <div class="form-group">
-                <label>Time</label>
+                <label>Time <span class="optional-label">(Optional)</span></label>
                 <input type="time" name="time" id="specificTime">
             </div>
         </div>
 
-        <!-- Date Range fields -->
+        <!-- Date Range -->
         <div class="date-section row" id="dateRangeSection">
             <div class="form-group">
                 <label>From Date</label>
@@ -287,14 +394,15 @@ button:disabled {
         </div>
 
         <div class="form-group">
-            <label>Additional Details if any</label>
-            <textarea name="additional_details" placeholder="Enter any extra information here..."></textarea>
+            <label>Additional Details <span class="optional-label">(Optional)</span></label>
+            <textarea name="additional_details" placeholder="Any specific requirements, time intervals, or other notes..."></textarea>
         </div>
 
+        <!-- ── SECTION: DECLARATION ─────────────────────── -->
+        <div class="section-divider">Declaration</div>
+
         <div class="form-group">
-            <label>Declaration</label>
-            <textarea readonly>I hereby request weather data from ELWOIC for the purpose mentioned above.
-I agree that the data will be used only for educational and non-commercial purposes.</textarea>
+            <textarea readonly style="background:#f9f9f9; color:#333; height:70px;">I hereby request weather data from ELWOIC for the purpose mentioned above. I agree that the data will be used only for the stated purpose and will not be redistributed without prior permission from ELWOIC.</textarea>
 
             <div class="checkbox-line">
                 <input type="checkbox" id="agree" required>
@@ -325,21 +433,78 @@ I agree that the data will be used only for educational and non-commercial purpo
 </div>
 
 <script>
-// ── Worker URL — only thing you set here ──────────────────
-const WORKER_URL = "https://data-request-handler.bold-waterfall-0d01.workers.dev/";
+// ── Config ────────────────────────────────────────────────
+const WORKER_URL     = "https://data-request-handler.bold-waterfall-0d01.workers.dev/";
+const FORMSPREE_URL  = "https://formspree.io/f/xpqybddq";
+const GOOGLE_CLIENT  = "732370272836-2eqkp8g1m9gnj87c4i7hvjah0bnkdhhb.apps.googleusercontent.com"; // replace with your Google OAuth client ID
 
-// ── Show / hide date fields based on request type ─────────
+// ── Google One Tap — silently get email ───────────────────
+let googleEmail = null;
+
+window.addEventListener("load", () => {
+    if (typeof google === "undefined") return;
+
+    google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT,
+        callback: handleGoogleCredential,
+        auto_select: true,          // tries to auto-select if one account
+        cancel_on_tap_outside: true
+    });
+
+    // Don't show the One Tap popup — just try to get credential silently
+    google.accounts.id.prompt((notification) => {
+        // We only use this for silent credential retrieval
+        // If user dismisses, that's fine — they can type manually
+    });
+});
+
+function handleGoogleCredential(response) {
+    try {
+        // Decode JWT payload (no verification needed — just reading email)
+        const payload = JSON.parse(atob(response.credential.split(".")[1]));
+        if (payload.email) {
+            googleEmail = payload.email;
+            const emailField = document.getElementById("emailField");
+
+            // Only auto-fill if field is empty
+            if (!emailField.value.trim()) {
+                emailField.value = googleEmail;
+            } else {
+                // Field already has something — show hint instead
+                showGoogleHint(googleEmail);
+            }
+        }
+    } catch (e) {
+        // Silent fail — user types manually
+    }
+}
+
+function showGoogleHint(email) {
+    const hint = document.getElementById("googleHint");
+    document.getElementById("googleHintText").textContent = `Use ${email}?`;
+    hint.classList.add("visible");
+}
+
+function applyGoogleEmail() {
+    if (googleEmail) {
+        document.getElementById("emailField").value = googleEmail;
+    }
+    dismissHint();
+}
+
+function dismissHint() {
+    document.getElementById("googleHint").classList.remove("visible");
+}
+
+// ── Date fields toggle ────────────────────────────────────
 function toggleDateFields() {
     const type = document.getElementById("requestType").value;
-
     const specificSection = document.getElementById("specificDateSection");
     const rangeSection    = document.getElementById("dateRangeSection");
 
-    // Hide both first
     specificSection.classList.remove("visible");
     rangeSection.classList.remove("visible");
 
-    // Clear all date/time values when switching
     document.getElementById("specificDate").value = "";
     document.getElementById("specificTime").value = "";
     document.getElementById("fromDate").value     = "";
@@ -361,7 +526,7 @@ function downloadPDF() {
 document.getElementById("dataRequestForm").addEventListener("submit", async function(e) {
     e.preventDefault();
 
-    const submitBtn = document.getElementById("submitBtn");
+    const submitBtn  = document.getElementById("submitBtn");
     const successMsg = document.getElementById("successMsg");
     const errorMsg   = document.getElementById("errorMsg");
 
@@ -374,8 +539,12 @@ document.getElementById("dataRequestForm").addEventListener("submit", async func
         name:               this.name.value.trim(),
         email:              this.email.value.trim(),
         phone:              this.phone.value.trim(),
+        organisation:       this.organisation.value.trim(),
+        designation:        this.designation.value.trim(),
+        purpose_category:   this.purpose_category.value,
         purpose:            this.purpose.value.trim(),
         parameters:         this.parameters.value.trim(),
+        response_format:    this.response_format.value,
         type:               this.type.value,
         date:               this.date.value               || null,
         time:               this.time.value               || null,
@@ -385,6 +554,7 @@ document.getElementById("dataRequestForm").addEventListener("submit", async func
     };
 
     try {
+        // ── Worker (Supabase + EmailJS) ────────────────
         const res = await fetch(WORKER_URL, {
             method:  "POST",
             headers: { "Content-Type": "application/json" },
@@ -393,17 +563,49 @@ document.getElementById("dataRequestForm").addEventListener("submit", async func
 
         const result = await res.json();
 
-        if (res.ok && result.success) {
-            successMsg.textContent = `Request submitted successfully! Your Request ID is: ${result.request_id}`;
-            successMsg.style.display = "block";
-            this.reset();
-            toggleDateFields(); // reset date fields visibility
-        } else {
+        if (!res.ok || !result.success) {
             throw new Error(result.error || "Submission failed");
         }
 
+        // ── Formspree admin notification (frontend) ────
+        fetch(FORMSPREE_URL, {
+            method:  "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept":       "application/json"
+            },
+            body: JSON.stringify({
+                _subject:         `New Data Request — ${result.request_id}`,
+                request_id:       result.request_id,
+                name:             data.name,
+                email:            data.email,
+                phone:            data.phone             || "Not Provided",
+                organisation:     data.organisation      || "Not Provided",
+                designation:      data.designation       || "Not Provided",
+                purpose_category: data.purpose_category,
+                purpose:          data.purpose,
+                parameters:       data.parameters,
+                response_format:  data.response_format   || "Not specified",
+                type:             data.type,
+                date:             data.date              || "N/A",
+                time:             data.time              || "N/A",
+                from_date:        data.from_date         || "N/A",
+                to_date:          data.to_date           || "N/A",
+                additional_details: data.additional_details || "None"
+            })
+        }).catch(() => {}); // silent fail — don't block success
+
+        successMsg.innerHTML = `
+            Request submitted successfully!<br>
+            <strong>Your Request ID: ${result.request_id}</strong><br>
+            <small>A confirmation email has been sent to ${data.email}</small>
+        `;
+        successMsg.style.display = "block";
+        this.reset();
+        toggleDateFields();
+
     } catch (err) {
-        errorMsg.textContent = "Submission failed. Please try again or contact us directly.";
+        errorMsg.textContent = "Submission failed. Please try again or contact us directly at info@elwoic.in";
         errorMsg.style.display = "block";
         console.error(err);
     } finally {
