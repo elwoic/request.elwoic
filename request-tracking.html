@@ -373,8 +373,7 @@ async function doTrack(){
 }
 
 /* ── BUILD PIPELINE ── */
-function buildPipeline(d){
-  const isClosed    = !!d.case_closed_at;
+const isClosed    = !!d.case_closed_at;
   const isDelivered = !!d.data_sent_at;
   const hasPrep     = !!d.data_prep_at;
   const isApprPend  = d.status==="approved_pending";
@@ -382,8 +381,10 @@ function buildPipeline(d){
   const isRejected  = d.status==="rejected";
   const hasVerified = !!d.verified_at && !d.verification_failed_reason;
   const hasVFail    = !!d.verification_failed_reason;
-  const isSeen      = !!d.seen_at;
-
+  
+  // FIXED LINE: Request is marked seen if seen_at exists OR if the status is explicitly set to "viewed"
+  const isSeen      = !!d.seen_at || d.status === "viewed";
+  
   // Build steps — approved_pending only shown if actually used
   const steps = [];
 
@@ -477,26 +478,38 @@ function showResult(d){
 
   // Status badge
   const isClosed = !!d.case_closed_at;
-  const badgeStatus = isClosed?"closed":d.status;
-  const badgeLabels={
-    Pending:"Pending",approved:"Approved",
-    approved_pending:"Approved — Data Pending",
-    rejected:"Rejected",verification_failed:"Verification Failed",
-    closed:"Case Closed"
+  const badgeStatus = isClosed ? "closed" : d.status;
+  
+  const badgeLabels = {
+    Pending: "Pending",
+    viewed: "Under Review", // <-- Add this line
+    approved: "Approved",
+    approved_pending: "Approved — Data Pending",
+    rejected: "Rejected",
+    verification_failed: "Verification Failed",
+    closed: "Case Closed"
   };
-  const badgeDots={
-    Pending:"🕐",approved:"✅",approved_pending:"⏳",
-    rejected:"❌",verification_failed:"⚠️",closed:"🔒"
+  
+  const badgeDots = {
+    Pending: "🕐",
+    viewed: "👀",           // <-- Add this line
+    approved: "✅",
+    approved_pending: "⏳",
+    rejected: "❌",
+    verification_failed: "⚠️",
+    closed: "🔒"
   };
 
   // Description messages
-  const descMap={
-    Pending:"Your request has been received and is currently under review by our team. Please check back later for updates.",
-    approved:"✅ Your request has been fully processed and the data has been sent to your email inbox. Please check your inbox and spam folder.",
-    approved_pending:"⏳ Your request is approved! Our team is currently preparing your data and will send it to you shortly.",
-    rejected:"❌ Your request could not be approved. Please check your email for details or contact us at info@elwoic.in.",
-    verification_failed:"⚠️ We were unable to verify the details on your request. Please see the note below and use the edit & resubmit button to correct and resubmit.",
-    closed:"🔒 This case has been resolved and closed. If you need further assistance, please submit a new request."
+ // Description messages
+  const descMap = {
+    Pending: "Your request has been received and is currently under review by our team. Please check back later for updates.",
+    viewed: "Your request has been received and opened by our team. We are currently evaluating your details.", // <-- Add this line
+    approved: "✅ Your request has been fully processed and the data has been sent to your email inbox. Please check your inbox and spam folder.",
+    approved_pending: "⏳ Your request is approved! Our team is currently preparing your data and will send it to you shortly.",
+    rejected: "❌ Your request could not be approved. Please check your email for details or contact us at info@elwoic.in.",
+    verification_failed: "⚠️ We were unable to verify the details on your request. Please see the note below and use the edit & resubmit button to correct and resubmit.",
+    closed: "🔒 This case has been resolved and closed. If you need further assistance, please submit a new request."
   };
 
   // Verification fail box (shown only if applicable)
