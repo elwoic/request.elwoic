@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELWOIC — Request Tracking</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Source+Serif+4:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f4f6fa; --surface:#ffffff; --sf2:#f1f3f7; --border:#dde2ec;
+  --text:#1a2236; --muted:#7a8aaa; --accent:#1d4ed8; --green:#16a34a;
+  --red:#dc2626; --orange:#d97706; --purple:#7c3aed; --teal:#0891b2;
+  --mono:'IBM Plex Mono',monospace; --serif:'Source Serif 4',Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--serif);background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── HEADER ── */
+.header{background:#0d3d6e;padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between;}
+.header-logo{font-family:var(--mono);font-size:16px;font-weight:600;letter-spacing:4px;color:#fff;}
+.header-sub{font-size:11px;color:rgba(255,255,255,.55);letter-spacing:1px;}
+.header-right{display:flex;align-items:center;gap:6px;}
+.header-right a{font-size:12px;color:rgba(255,255,255,.6);text-decoration:none;padding:5px 10px;border-radius:4px;transition:background .2s;}
+.header-right a:hover{background:rgba(255,255,255,.1);color:#fff;}
+
+/* ── PAGE WRAPPER ── */
+.page{max-width:680px;margin:0 auto;padding:36px 20px 60px;}
+
+/* ── SEARCH BOX ── */
+.search-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:32px 28px;box-shadow:0 2px 16px rgba(0,0,0,.06);margin-bottom:24px;}
+.search-title{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+.search-sub{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.5;}
+.inp-row{display:flex;gap:8px;margin-bottom:10px;}
+.sinp{flex:1;padding:11px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;transition:border-color .2s;}
+.sinp:focus{border-color:var(--accent);}
+.captcha-row{display:flex;gap:8px;align-items:center;margin-bottom:14px;}
+.captcha-box{background:#1a2236;color:#f0c040;font-family:var(--mono);font-size:17px;font-weight:700;letter-spacing:6px;padding:9px 16px;border-radius:7px;user-select:none;min-width:110px;text-align:center;}
+.captcha-inp{flex:1;padding:11px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:14px;letter-spacing:3px;outline:none;transition:border-color .2s;}
+.captcha-inp:focus{border-color:var(--accent);}
+.refresh-cap{background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;padding:4px;transition:color .2s;}
+.refresh-cap:hover{color:var(--accent);}
+.track-btn{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:var(--serif);font-size:14px;font-weight:600;cursor:pointer;transition:background .2s;letter-spacing:.5px;}
+.track-btn:hover{background:#1e40af;}
+.track-btn:disabled{background:#93c5fd;cursor:not-allowed;}
+.err-msg{color:var(--red);font-size:12px;margin-top:8px;display:none;font-family:var(--mono);}
+
+/* ── RESULT CARD ── */
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.06);display:none;}
+.rc-header{background:#0d3d6e;padding:18px 24px;}
+.rc-id{font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.55);letter-spacing:1px;margin-bottom:4px;}
+.rc-name{font-size:18px;font-weight:600;color:#fff;}
+.rc-date{font-size:12px;color:rgba(255,255,255,.5);margin-top:3px;}
+.rc-body{padding:22px 24px;}
+
+/* STATUS BADGE */
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.5px;text-transform:uppercase;margin-bottom:20px;}
+.sb-pending{background:#fef3c7;color:#92400e;border:1px solid #fcd34d;}
+.sb-approved{background:#dcfce7;color:#14532d;border:1px solid #86efac;}
+.sb-approved_pending{background:#dbeafe;color:#1e3a8a;border:1px solid #93c5fd;}
+.sb-rejected{background:#fee2e2;color:#7f1d1d;border:1px solid #fca5a5;}
+.sb-verification_failed{background:#fae8ff;color:#581c87;border:1px solid #d8b4fe;}
+.sb-closed{background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;}
+
+/* PIPELINE */
+.pipeline-wrap{margin-bottom:20px;}
+.pipeline-title{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+.pipeline{display:flex;flex-direction:column;gap:0;}
+.pipe-step{display:flex;gap:12px;position:relative;}
+.pipe-step:not(:last-child) .pipe-body{padding-bottom:18px;}
+.pipe-step:not(:last-child)::before{content:'';position:absolute;left:11px;top:23px;bottom:0;width:2px;background:#e2e8f0;}
+.pipe-step.done::before{background:#86efac;}
+.pipe-step.error::before{background:#d8b4fe;}
+.pipe-step.active::before{background:#bfdbfe;}
+.pipe-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;z-index:1;margin-top:1px;}
+.pipe-dot.done{background:var(--green);color:#fff;}
+.pipe-dot.active{background:var(--accent);color:#fff;}
+.pipe-dot.error{background:var(--purple);color:#fff;}
+.pipe-dot.wait{background:#e2e8f0;color:#94a3b8;}
+.pipe-dot.closed{background:#475569;color:#fff;}
+.pipe-body{flex:1;}
+.pipe-label{font-size:13px;font-weight:700;color:var(--text);line-height:1.3;}
+.pipe-sub{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5;}
+.pipe-ts{font-size:10px;color:#94a3b8;font-family:var(--mono);margin-top:3px;}
+
+/* VERIFICATION FAIL BOX */
+.vfail-box{background:#fdf4ff;border:1px solid #d8b4fe;border-radius:10px;padding:16px 18px;margin-bottom:18px;}
+.vfail-title{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#7c3aed;margin-bottom:6px;font-weight:700;}
+.vfail-reason{font-size:13px;color:#581c87;line-height:1.6;margin-bottom:12px;}
+.resubmit-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:#7c3aed;color:#fff;border:none;border-radius:7px;font-family:var(--serif);font-size:13px;font-weight:600;cursor:pointer;transition:background .2s;text-decoration:none;}
+.resubmit-btn:hover{background:#6d28d9;}
+
+/* DESC BOX */
+.desc-box{border-radius:9px;padding:14px 16px;font-size:13px;line-height:1.7;margin-bottom:18px;}
+.desc-pending{background:#fffbeb;border:1px solid #fde68a;color:#92400e;}
+.desc-approved{background:#f0fdf4;border:1px solid #86efac;color:#14532d;}
+.desc-approved_pending{background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;}
+.desc-rejected{background:#fff1f2;border:1px solid #fecdd3;color:#9f1239;}
+.desc-verification_failed{background:#fdf4ff;border:1px solid #d8b4fe;color:#581c87;}
+.desc-closed{background:#f8fafc;border:1px solid #e2e8f0;color:#475569;}
+
+.new-search-btn{padding:10px 20px;background:var(--sf2);border:1px solid var(--border);border-radius:7px;color:var(--muted);font-size:13px;cursor:pointer;font-family:var(--serif);transition:all .2s;}
+.new-search-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* ── RESUBMIT FORM ── */
+.resubmit-section{display:none;margin-top:0;}
+.resubmit-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.06);}
+.rs-header{background:#7c3aed;padding:18px 24px;}
+.rs-header h2{font-size:17px;font-weight:600;color:#fff;margin-bottom:3px;}
+.rs-header p{font-size:12px;color:rgba(255,255,255,.65);}
+.rs-body{padding:22px 24px;}
+.rs-id-bar{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--sf2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;margin-bottom:18px;}
+.flabel{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px;margin-top:14px;font-family:var(--mono);}
+.flabel:first-child{margin-top:0;}
+.finp{width:100%;padding:10px 13px;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--serif);font-size:13px;outline:none;transition:border-color .2s;}
+.finp:focus{border-color:var(--purple);}
+.fsel{width:100%;padding:10px 13px;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--serif);font-size:13px;outline:none;transition:border-color .2s;}
+.fsel:focus{border-color:var(--purple);}
+.fta{width:100%;padding:10px 13px;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--serif);font-size:13px;line-height:1.6;resize:vertical;outline:none;min-height:90px;}
+.fta:focus{border-color:var(--purple);}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.section-divider{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:14px 0 8px;border-bottom:1px solid var(--border);margin-bottom:4px;}
+.submit-row{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
+.submit-btn{flex:1;padding:12px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-family:var(--serif);font-size:14px;font-weight:600;cursor:pointer;transition:background .2s;}
+.submit-btn:hover{background:#6d28d9;}
+.submit-btn:disabled{background:#c4b5fd;cursor:not-allowed;}
+.cancel-btn{padding:12px 20px;background:var(--sf2);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:13px;cursor:pointer;font-family:var(--serif);transition:all .2s;}
+.cancel-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* SUCCESS STATE */
+.success-card{background:var(--surface);border:1px solid #86efac;border-radius:14px;padding:36px 28px;text-align:center;box-shadow:0 2px 16px rgba(0,0,0,.06);display:none;}
+.success-icon{font-size:48px;margin-bottom:12px;}
+.success-title{font-size:20px;font-weight:600;color:var(--green);margin-bottom:8px;}
+.success-sub{font-size:14px;color:var(--muted);line-height:1.6;}
+
+/* LOADING */
+.loading{text-align:center;padding:32px;color:var(--muted);font-size:13px;display:none;}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin-right:8px;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-logo">ELWOIC</div>
+    <div class="header-sub">Request Tracking Portal</div>
+  </div>
+  <div class="header-right">
+    <a href="https://elwoic.in">← Home</a>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- SEARCH -->
+  <div class="search-card" id="searchSection">
+    <div class="search-title">Track Your Request</div>
+    <div class="search-sub">Enter your Request ID to see the current status and progress of your data request.</div>
+    <div class="inp-row">
+      <input class="sinp" type="text" id="reqIdInput" placeholder="e.g. ELWOIC-1748394028123"
+             onkeydown="if(event.key==='Enter')doTrack()">
+    </div>
+    <div class="captcha-row">
+      <div class="captcha-box" id="captchaCode"></div>
+      <input class="captcha-inp" type="text" id="captchaInput" placeholder="Enter code" maxlength="5">
+      <button class="refresh-cap" onclick="genCaptcha()" title="Refresh code">↻</button>
+    </div>
+    <button class="track-btn" id="trackBtn" onclick="doTrack()">Track Request</button>
+    <div class="err-msg" id="errMsg"></div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading" id="loading">
+    <span class="spinner"></span>Looking up your request…
+  </div>
+
+  <!-- RESULT -->
+  <div class="result-card" id="resultCard">
+    <div class="rc-header">
+      <div class="rc-id" id="rcId"></div>
+      <div class="rc-name" id="rcName"></div>
+      <div class="rc-date" id="rcDate"></div>
+    </div>
+    <div class="rc-body" id="rcBody"></div>
+  </div>
+
+  <!-- RESUBMIT FORM -->
+  <div class="resubmit-section" id="resubmitSection">
+    <div class="resubmit-card">
+      <div class="rs-header">
+        <h2>Edit &amp; Resubmit Your Request</h2>
+        <p>Please correct the details below and resubmit. Your Request ID stays the same.</p>
+      </div>
+      <div class="rs-body">
+        <div class="rs-id-bar">Request ID: <strong id="rsReqId"></strong></div>
+        <div class="vfail-box" style="margin-bottom:16px;">
+          <div class="vfail-title">⚠ Reason for Resubmission</div>
+          <div class="vfail-reason" id="rsReason"></div>
+        </div>
+
+        <div class="section-divider">Personal Details</div>
+        <label class="flabel">Full Name *</label>
+        <input class="finp" type="text" id="f_name" placeholder="Your full name">
+        <div class="fg2">
+          <div>
+            <label class="flabel">Email Address *</label>
+            <input class="finp" type="email" id="f_email" placeholder="your@email.com">
+          </div>
+          <div>
+            <label class="flabel">Phone Number</label>
+            <input class="finp" type="tel" id="f_phone" placeholder="+91 XXXXX XXXXX">
+          </div>
+        </div>
+        <div class="fg2">
+          <div>
+            <label class="flabel">Organisation</label>
+            <input class="finp" type="text" id="f_org" placeholder="Organisation / Institution">
+          </div>
+          <div>
+            <label class="flabel">Designation</label>
+            <input class="finp" type="text" id="f_desig" placeholder="Your designation / role">
+          </div>
+        </div>
+
+        <div class="section-divider">Request Details</div>
+        <label class="flabel">Purpose Category *</label>
+        <select class="fsel" id="f_purpose_category">
+          <option value="">Select category…</option>
+          <option value="Research">Research</option>
+          <option value="Education">Education</option>
+          <option value="Personal">Personal</option>
+          <option value="Commercial">Commercial</option>
+          <option value="Government">Government</option>
+          <option value="Media">Media</option>
+          <option value="Other">Other</option>
+        </select>
+        <label class="flabel">Purpose / Reason for Request *</label>
+        <textarea class="fta" id="f_purpose" placeholder="Describe why you need this data…"></textarea>
+        <label class="flabel">Parameters / Data Required *</label>
+        <textarea class="fta" id="f_parameters" placeholder="Specify the exact data parameters you need…"></textarea>
+
+        <div class="section-divider">Data Specifications</div>
+        <div class="fg2">
+          <div>
+            <label class="flabel">Request Type</label>
+            <select class="fsel" id="f_type">
+              <option value="">Select…</option>
+              <option value="Historical">Historical Data</option>
+              <option value="Real-time">Real-time Data</option>
+              <option value="Forecast">Forecast Data</option>
+              <option value="Summary">Summary / Report</option>
+            </select>
+          </div>
+          <div>
+            <label class="flabel">Response Format</label>
+            <select class="fsel" id="f_response_format">
+              <option value="">Select…</option>
+              <option value="PDF">PDF</option>
+              <option value="Excel">Excel / CSV</option>
+              <option value="JSON">JSON</option>
+              <option value="Email">Email Summary</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg2">
+          <div>
+            <label class="flabel">Specific Date</label>
+            <input class="finp" type="date" id="f_date">
+          </div>
+          <div>
+            <label class="flabel">Specific Time</label>
+            <input class="finp" type="time" id="f_time">
+          </div>
+        </div>
+        <div class="fg2">
+          <div>
+            <label class="flabel">From Date</label>
+            <input class="finp" type="date" id="f_from_date">
+          </div>
+          <div>
+            <label class="flabel">To Date</label>
+            <input class="finp" type="date" id="f_to_date">
+          </div>
+        </div>
+        <label class="flabel">Additional Details</label>
+        <textarea class="fta" id="f_additional" placeholder="Any other relevant information…"></textarea>
+
+        <div class="submit-row">
+          <button class="submit-btn" id="resubmitBtn" onclick="doResubmit()">✓ Resubmit Request</button>
+          <button class="cancel-btn" onclick="cancelResubmit()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success-card" id="successCard">
+    <div class="success-icon">✅</div>
+    <div class="success-title">Request Resubmitted!</div>
+    <div class="success-sub">Your request has been updated and sent back for review.<br>Use your same Request ID to track the new status.<br><br>
+      <button class="new-search-btn" onclick="resetAll()" style="margin-top:8px;">Track Again</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const W = "https://data-admin-request-handler.bold-waterfall-0d01.workers.dev";
+let currentData = null;
+let captchaCode = "";
+
+/* ── CAPTCHA ── */
+function genCaptcha(){
+  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let r="";
+  for(let i=0;i<5;i++) r+=chars[Math.floor(Math.random()*chars.length)];
+  captchaCode=r;
+  document.getElementById("captchaCode").textContent=r;
+  document.getElementById("captchaInput").value="";
+}
+genCaptcha();
+
+/* ── FORMAT DATE ── */
+function fmtDate(ts){
+  if(!ts) return null;
+  return new Date(ts).toLocaleString("en-IN",{
+    timeZone:"Asia/Kolkata",day:"2-digit",month:"short",
+    year:"numeric",hour:"2-digit",minute:"2-digit",hour12:true
+  })+" IST";
+}
+function fmtDateShort(ts){
+  if(!ts) return "—";
+  return new Date(ts).toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});
+}
+
+/* ── TRACK ── */
+async function doTrack(){
+  const reqId = document.getElementById("reqIdInput").value.trim();
+  const cap   = document.getElementById("captchaInput").value.trim().toUpperCase();
+  const err   = document.getElementById("errMsg");
+  const btn   = document.getElementById("trackBtn");
+
+  err.style.display="none";
+  if(!reqId){err.textContent="Please enter your Request ID.";err.style.display="block";return;}
+  if(cap!==captchaCode){err.textContent="Security code is incorrect.";err.style.display="block";genCaptcha();return;}
+
+  btn.disabled=true; btn.textContent="Tracking…";
+  document.getElementById("loading").style.display="block";
+  document.getElementById("resultCard").style.display="none";
+  document.getElementById("resubmitSection").style.display="none";
+
+  try{
+    const res  = await fetch(`${W}/track?id=${encodeURIComponent(reqId)}`);
+    const data = await res.json();
+
+    if(!data.found){
+      err.textContent="Request ID not found. Please check and try again.";
+      err.style.display="block";
+      genCaptcha();
+    } else {
+      currentData=data;
+      document.getElementById("searchSection").style.display="none";
+      showResult(data);
+    }
+  }catch(e){
+    err.textContent="Connection error. Please try again.";
+    err.style.display="block";
+    genCaptcha();
+  }finally{
+    document.getElementById("loading").style.display="none";
+    btn.disabled=false; btn.textContent="Track Request";
+  }
+}
+
+/* ── BUILD PIPELINE ── */
+function buildPipeline(d){
+  const isClosed    = !!d.case_closed_at;
+  const isDelivered = !!d.data_sent_at;
+  const hasPrep     = !!d.data_prep_at;
+  const isApprPend  = d.status==="approved_pending";
+  const isApproved  = d.status==="approved";
+  const isRejected  = d.status==="rejected";
+  const hasVerified = !!d.verified_at && !d.verification_failed_reason;
+  const hasVFail    = !!d.verification_failed_reason;
+  const isSeen      = !!d.seen_at;
+
+  // Build steps — approved_pending only shown if actually used
+  const steps = [];
+
+  // 1. Submitted & Logged
+  steps.push({
+    label:"Submitted & Logged",
+    sub:"Request received and recorded in system",
+    ts:d.created_at, state:"done"
+  });
+
+  // 2. Seen by Team
+  steps.push({
+    label:"Seen by Team",
+    sub:isSeen?"Your request has been reviewed by our team":"Awaiting review",
+    ts:d.seen_at, state:isSeen?"done":"active"
+  });
+
+  // 3. Verification
+  steps.push({
+    label:"Verification",
+    sub:hasVFail?"Verification unsuccessful — see note below"
+        :hasVerified?"Identity & details verified"
+        :"Awaiting verification",
+    ts:d.verified_at||null,
+    state:hasVFail?"error":hasVerified?"done":isSeen?"active":"wait"
+  });
+
+  // 4. Approved (Pending) — only show if this stage was actually used
+  if(isApprPend || (d.approved_at && !hasPrep)){
+    steps.push({
+      label:"Approved — Data Pending",
+      sub:isApprPend?"Request approved. Data is being prepared for you.":"Approved, preparing data",
+      ts:d.approved_at||null,
+      state:isApprPend?"active":d.approved_at?"done":"wait"
+    });
+  }
+
+  // 5. Data Prepared
+  steps.push({
+    label:"Data Prepared",
+    sub:hasPrep?"Your data has been compiled and is ready":"Data is being prepared",
+    ts:d.data_prep_at||null,
+    state:hasPrep?"done":(hasVerified&&!isRejected)?"active":"wait"
+  });
+
+  // 6. Delivered
+  steps.push({
+    label:isDelivered?"Delivered ✓":"Delivery",
+    sub:isDelivered?"Data has been sent to your email inbox":"Your data will be sent to your email shortly",
+    ts:d.data_sent_at||null,
+    state:isDelivered?"done":hasPrep?"active":"wait"
+  });
+
+  // 7. Case Closed
+  steps.push({
+    label:"Case Closed",
+    sub:isClosed?"This case has been resolved and closed":"Case is open",
+    ts:d.case_closed_at||null,
+    state:isClosed?"closed":"wait"
+  });
+
+  // If rejected — grey out after verification
+  if(isRejected){
+    steps.forEach((s,i)=>{
+      if(i>2 && s.label!=="Case Closed") s.state="wait";
+    });
+    if(isClosed){ const last=steps[steps.length-1]; last.state="closed"; }
+  }
+
+  const iconMap={done:"✓",active:"⏳",error:"✕",wait:"○",closed:"🔒"};
+  return `<div class="pipeline">`+steps.map(s=>{
+    const icon=iconMap[s.state]||"○";
+    const ts=s.ts?`<div class="pipe-ts">🕐 ${fmtDate(s.ts)}</div>`:"";
+    return `<div class="pipe-step ${s.state}">
+      <div class="pipe-dot ${s.state}">${icon}</div>
+      <div class="pipe-body">
+        <div class="pipe-label">${s.label}</div>
+        <div class="pipe-sub">${s.sub}</div>
+        ${ts}
+      </div>
+    </div>`;
+  }).join("")+`</div>`;
+}
+
+/* ── SHOW RESULT ── */
+function showResult(d){
+  // Header
+  document.getElementById("rcId").textContent="Request ID: "+d.request_id;
+  document.getElementById("rcName").textContent=d.name;
+  document.getElementById("rcDate").textContent="Submitted: "+fmtDateShort(d.created_at);
+
+  // Status badge
+  const isClosed = !!d.case_closed_at;
+  const badgeStatus = isClosed?"closed":d.status;
+  const badgeLabels={
+    Pending:"Pending",approved:"Approved",
+    approved_pending:"Approved — Data Pending",
+    rejected:"Rejected",verification_failed:"Verification Failed",
+    closed:"Case Closed"
+  };
+  const badgeDots={
+    Pending:"🕐",approved:"✅",approved_pending:"⏳",
+    rejected:"❌",verification_failed:"⚠️",closed:"🔒"
+  };
+
+  // Description messages
+  const descMap={
+    Pending:"Your request has been received and is currently under review by our team. Please check back later for updates.",
+    approved:"✅ Your request has been fully processed and the data has been sent to your email inbox. Please check your inbox and spam folder.",
+    approved_pending:"⏳ Your request is approved! Our team is currently preparing your data and will send it to you shortly.",
+    rejected:"❌ Your request could not be approved. Please check your email for details or contact us at info@elwoic.in.",
+    verification_failed:"⚠️ We were unable to verify the details on your request. Please see the note below and use the edit & resubmit button to correct and resubmit.",
+    closed:"🔒 This case has been resolved and closed. If you need further assistance, please submit a new request."
+  };
+
+  // Verification fail box (shown only if applicable)
+  const hasVFail = !!d.verification_failed_reason && !isClosed;
+  const vfailHTML = hasVFail ? `
+    <div class="vfail-box">
+      <div class="vfail-title">⚠ Verification Could Not Be Completed</div>
+      <div class="vfail-reason">${d.verification_failed_reason}</div>
+      <button class="resubmit-btn" onclick="openResubmit()">✏ Edit &amp; Resubmit Request</button>
+    </div>` : "";
+
+  document.getElementById("rcBody").innerHTML=`
+    <span class="status-badge sb-${badgeStatus}">${badgeDots[badgeStatus]||"•"} ${badgeLabels[badgeStatus]||badgeStatus}</span>
+    ${vfailHTML}
+    <div class="pipeline-wrap">
+      <div class="pipeline-title">Request Progress</div>
+      ${buildPipeline(d)}
+    </div>
+    <div class="desc-box desc-${badgeStatus}">${descMap[badgeStatus]||descMap.Pending}</div>
+    <button class="new-search-btn" onclick="resetAll()">← New Search</button>
+  `;
+
+  document.getElementById("resultCard").style.display="block";
+}
+
+/* ── RESUBMIT ── */
+function openResubmit(){
+  const d = currentData;
+  // Fill reason
+  document.getElementById("rsReqId").textContent=d.request_id;
+  document.getElementById("rsReason").textContent=d.verification_failed_reason||"Please review and correct your details.";
+
+  // Pre-fill all fields with existing data
+  document.getElementById("f_name").value              = d.name||"";
+  document.getElementById("f_email").value             = d.email||"";
+  document.getElementById("f_phone").value             = d.phone||"";
+  document.getElementById("f_org").value               = d.organisation||"";
+  document.getElementById("f_desig").value             = d.designation||"";
+  document.getElementById("f_purpose_category").value  = d.purpose_category||"";
+  document.getElementById("f_purpose").value           = d.purpose||"";
+  document.getElementById("f_parameters").value        = d.parameters||"";
+  document.getElementById("f_type").value              = d.type||"";
+  document.getElementById("f_response_format").value   = d.response_format||"";
+  document.getElementById("f_date").value              = d.date||"";
+  document.getElementById("f_time").value              = d.time||"";
+  document.getElementById("f_from_date").value         = d.from_date||"";
+  document.getElementById("f_to_date").value           = d.to_date||"";
+  document.getElementById("f_additional").value        = d.additional_details||"";
+
+  document.getElementById("resultCard").style.display="none";
+  document.getElementById("resubmitSection").style.display="block";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function cancelResubmit(){
+  document.getElementById("resubmitSection").style.display="none";
+  document.getElementById("resultCard").style.display="block";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+async function doResubmit(){
+  const d   = currentData;
+  const btn = document.getElementById("resubmitBtn");
+
+  // Basic validation
+  const name  = document.getElementById("f_name").value.trim();
+  const email = document.getElementById("f_email").value.trim();
+  const purp  = document.getElementById("f_purpose").value.trim();
+  const param = document.getElementById("f_parameters").value.trim();
+  const cat   = document.getElementById("f_purpose_category").value;
+
+  if(!name||!email||!purp||!param||!cat){
+    alert("Please fill in all required fields (marked *).");
+    return;
+  }
+
+  btn.disabled=true; btn.textContent="Submitting…";
+
+  const payload={
+    request_id: d.request_id,
+    name,
+    email,
+    phone:              document.getElementById("f_phone").value.trim(),
+    organisation:       document.getElementById("f_org").value.trim(),
+    designation:        document.getElementById("f_desig").value.trim(),
+    purpose_category:   cat,
+    purpose:            purp,
+    parameters:         param,
+    type:               document.getElementById("f_type").value,
+    response_format:    document.getElementById("f_response_format").value,
+    date:               document.getElementById("f_date").value,
+    time:               document.getElementById("f_time").value,
+    from_date:          document.getElementById("f_from_date").value,
+    to_date:            document.getElementById("f_to_date").value,
+    additional_details: document.getElementById("f_additional").value.trim(),
+  };
+
+  try{
+    const res  = await fetch(`${W}/resubmit`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    if(res.ok && data.success){
+      document.getElementById("resubmitSection").style.display="none";
+      document.getElementById("successCard").style.display="block";
+      window.scrollTo({top:0,behavior:"smooth"});
+    } else {
+      alert("Resubmission failed: "+(data.error||"Unknown error. Please try again."));
+    }
+  }catch(e){
+    alert("Connection error. Please check your internet and try again.");
+  }finally{
+    btn.disabled=false; btn.textContent="✓ Resubmit Request";
+  }
+}
+
+/* ── RESET ── */
+function resetAll(){
+  currentData=null;
+  document.getElementById("searchSection").style.display="block";
+  document.getElementById("resultCard").style.display="none";
+  document.getElementById("resubmitSection").style.display="none";
+  document.getElementById("successCard").style.display="none";
+  document.getElementById("reqIdInput").value="";
+  document.getElementById("errMsg").style.display="none";
+  genCaptcha();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+</script>
+</body>
+</html>
