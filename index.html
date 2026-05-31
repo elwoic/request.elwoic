@@ -382,16 +382,29 @@ button:disabled { background: #999; cursor: not-allowed; }
         </div>
 
         <!-- Date Range -->
-        <div class="date-section row" id="dateRangeSection">
-            <div class="form-group">
-                <label>From Date</label>
-                <input type="date" name="from_date" id="fromDate">
-            </div>
-            <div class="form-group">
-                <label>To Date</label>
-                <input type="date" name="to_date" id="toDate">
-            </div>
+       <!-- Date Range -->
+<div class="date-section" id="dateRangeSection">
+    <div class="row">
+        <div class="form-group">
+            <label>From Date</label>
+            <input type="date" name="from_date" id="fromDate">
         </div>
+        <div class="form-group">
+            <label>From Time <span class="optional-label">(Optional)</span></label>
+            <input type="time" name="from_time" id="fromTime">
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group">
+            <label>To Date</label>
+            <input type="date" name="to_date" id="toDate">
+        </div>
+        <div class="form-group">
+            <label>To Time <span class="optional-label">(Optional)</span></label>
+            <input type="time" name="to_time" id="toTime">
+        </div>
+    </div>
+</div>
 
         <div class="form-group">
             <label>Additional Details <span class="optional-label">(Optional)</span></label>
@@ -501,7 +514,7 @@ function toggleDateFields() {
     const type = document.getElementById("requestType").value;
     const specificSection = document.getElementById("specificDateSection");
     const rangeSection    = document.getElementById("dateRangeSection");
-
+    
     specificSection.classList.remove("visible");
     rangeSection.classList.remove("visible");
 
@@ -509,7 +522,9 @@ function toggleDateFields() {
     document.getElementById("specificTime").value = "";
     document.getElementById("fromDate").value     = "";
     document.getElementById("toDate").value       = "";
-
+    document.getElementById("fromTime").value = "";
+    document.getElementById("toTime").value   = "";
+    
     if (type === "Specific Date & Time") {
         specificSection.classList.add("visible");
     } else if (type === "Date Range") {
@@ -550,6 +565,8 @@ document.getElementById("dataRequestForm").addEventListener("submit", async func
         time:               this.time.value               || null,
         from_date:          this.from_date.value          || null,
         to_date:            this.to_date.value            || null,
+        from_time: this.from_time.value || null,
+        to_time:   this.to_time.value   || null,
         additional_details: this.additional_details.value.trim()
     };
 
@@ -591,6 +608,8 @@ document.getElementById("dataRequestForm").addEventListener("submit", async func
                 time:             data.time              || "N/A",
                 from_date:        data.from_date         || "N/A",
                 to_date:          data.to_date           || "N/A",
+                from_time:        data.from_time         || "N/A",
+                to_time:          data.to_time           || "N/A",
                 additional_details: data.additional_details || "None"
             })
         }).catch(() => {}); // silent fail — don't block success
